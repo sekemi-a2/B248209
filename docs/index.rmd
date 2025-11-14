@@ -8,33 +8,59 @@ date: "2025-10-31"
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## R Markdown
+### The impact of COVID-19 pandemic on Type 2 diabetes medication prescribing patterns, and how prescription patterns vary across deprived areas?
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+##### During the COVID-19 pandemic and its associated lockdowns, population health was significantly affected. Reduced physical activity, disruptions to daily routines, and increased comfort eating contributed to rising concerns about weight gain and metabolic health. Given these conditions, an increase in obesity and consequently Type 2 diabetes might be expected. This project examines how Type 2 diabetes prescribing patterns changed during the pandemic and whether these changes differed across socioeconomically deprived areas.
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
 
-```{r cars}
-summary(cars)
-```
-
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-
-#create second plot
+```{r echo=FALSE, message=FALSE, warning=FALSE}
 library(tidyverse)
-ggplot(cars, aes(x = speed, y = dist)) +
-  geom_col()
+library(janitor) # cleaning data
+library(gt) # tables
+library(here) # directory structure
+
+data_for_year <- read_csv(here("data_for_year.csv")) %>% 
+  clean_names()
+
 
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
 
 ```{r}
-1+1
+diabetes_summary <- data_for_year %>%
+  #filter for diabetes medications
+  filter(!is.na(bnf_item_description)) %>% 
+  filter(str_detect(bnf_item_description,
+                    regex("metformin|gliptin|gliflozin|glutide|glitazone|gliclazide|glimepiride", ignore_case = TRUE))) %>% 
+    group_by(paid_date_month, hbt) %>% 
+    summarise(total_items = sum(number_of_paid_items, na.rm = TRUE)) %>% 
+#change months from numbers to letters
+    mutate(paid_date_month = ym(paid_date_month),
+         month_name = format(paid_date_month, "%B"),
+         month_name = factor(month_name, 
+                            levels = c("March", "April", "May", "June", "July", "August", "September", "October", "November", "December", "January", "February")))
 ```
 
+
+
+```{r totalmeds_plot, echo=FALSE}
+# Creating a summary table and filtering for common type 2 medications
+totalmeds_plot <- diabetes_summary %>% 
+  ggplot(aes(x = paid_date_month, y = total_items, colour = hbt)) +
+  geom_line() +                 # line plot for trends               # add points for clarity
+  labs(
+    title = "Total Number of Diabetes Medications by Month and Health Board",
+    subtitle = "March 2020 - February 2022",
+    x = "Month",
+    y = "Total Number of Medications",
+    color = "Health Board"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust=1)) +
+  facet_wrap(~hbt)
+
+print(totalmeds_plot)
+
+```
+
+##### Next tasks: 1. Join the data to Scottish census to change healthboard codes to healthboard names. 2. Create a map to show the %change in type 2 medications by health board. 3. Create a table to compare type 2 diabetes prescribing across deprivation levels by linking to SIMD database. 4. Create another table/graph to further analyse results

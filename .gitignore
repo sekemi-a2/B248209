@@ -48,3 +48,6 @@ rsconnect/
 
 #data folder
 data/
+
+#data for year - REMEMBER TO DELETE
+data_for_year.csv
