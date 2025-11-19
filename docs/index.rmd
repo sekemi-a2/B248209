@@ -92,3 +92,28 @@ totalmeds_plot <- combined_health_data %>%
 
 print(totalmeds_plot)
 ```
+
+```{r message=FALSE, warning=FALSE}
+# Collapse across Health Boards → compute national average per decile
+simd_gradient <- combined_health_data %>%
+  group_by(SIMD2020v2_Decile) %>%
+  summarise(
+    avg_qph = mean(quantity_per_head, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+# Plot
+ggplot(simd_gradient, aes(x = SIMD2020v2_Decile, y = avg_qph)) +
+  geom_point(size = 3) +
+  geom_line() +
+  geom_smooth(method = "lm", se = FALSE, linetype = "dashed") +
+  labs(
+    title = "Average Diabetes Medications per Person by SIMD Decile",
+    subtitle = "National average across all Health Boards, Mar 2020 – Feb 2022",
+    x = "SIMD Decile (1 = Most Deprived)",
+    y = "Avg. Medications per Person"
+  ) +
+  theme_minimal()
+
+```
+
