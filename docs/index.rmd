@@ -74,7 +74,7 @@ combined_health_data <- combined_health_data %>%
 
 
 
-```{message=FALSE, warning=FALSE}
+```{r message=FALSE, warning=FALSE}
 # Creating a summary table and filtering for common type 2 medications
 totalmeds_plot <- combined_health_data %>% 
   ggplot(aes(x = paid_date_month, y = quantity_per_head)) +
@@ -92,5 +92,3 @@ totalmeds_plot <- combined_health_data %>%
 
 print(totalmeds_plot)
 ```
-
-##### Next tasks: 1. Join the data to Scottish census to change healthboard codes to healthboard names. 2. Create a map to show the %change in type 2 medications by health board. 3. Create a table to compare type 2 diabetes prescribing across deprivation levels by linking to SIMD database. 4. Create another table/graph to further analyse results
