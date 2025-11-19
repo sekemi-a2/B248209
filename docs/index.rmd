@@ -13,54 +13,84 @@ knitr::opts_chunk$set(echo = TRUE)
 ##### During the COVID-19 pandemic and its associated lockdowns, population health was significantly affected. Reduced physical activity, disruptions to daily routines, and increased comfort eating contributed to rising concerns about weight gain and metabolic health. Given these conditions, an increase in obesity and consequently Type 2 diabetes might be expected. This project examines how Type 2 diabetes prescribing patterns changed during the pandemic and whether these changes differed across socioeconomically deprived areas.
 
 
-```{r echo=FALSE, message=FALSE, warning=FALSE}
+```{r message=FALSE, warning=FALSE}
 library(tidyverse)
 library(janitor) # cleaning data
 library(gt) # tables
 library(here) # directory structure
+library(readxl) # read in excel file
 
-data_for_year <- read_csv(here("data_for_year.csv")) %>% 
-  clean_names()
+#Get data from 24-month period from Mar 2020 - Feb 2022 
+#create function to read data in:
+prescriptions_data <- function() {
+  files <- c(paste0(c("mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"), "2020"),
+             paste0(c("jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"), "2021"),
+             paste0(c("jan", "feb"), "2022"))
+  
+  map_dfr(files, ~read_csv(here("data", paste0(.x, ".csv"))) %>%
+                   clean_names() %>%
+                   mutate(file_name = .x))}
 
+# Read in data
+data_for_years <- prescriptions_data()
+deprivation_stats <- read_excel(here("data/SIMD.xlsx"))
+```
 
+```{r message=FALSE, warning=FALSE}
+#Read in and tidy healthboard population database
+population_data <- read_csv(here("data/general_health_census.csv"), skip = 10) %>% 
+  filter(!is.na('All people')) %>%  #Removes NA
+  rename(hb_name = "General health",
+         hb_population = "All people") %>% 
+  select(hb_name, hb_population) %>% 
+  filter(!str_detect(hb_population, "Cells")) #Removes rows with text in population (to remove copyright info)
 ```
 
 
-```{r}
-diabetes_summary <- data_for_year %>%
+```{r message=FALSE, warning=FALSE}
+diabetes_summary <- data_for_years %>%
   #filter for diabetes medications
   filter(!is.na(bnf_item_description)) %>% 
   filter(str_detect(bnf_item_description,
                     regex("metformin|gliptin|gliflozin|glutide|glitazone|gliclazide|glimepiride", ignore_case = TRUE))) %>% 
     group_by(paid_date_month, hbt) %>% 
-    summarise(total_items = sum(number_of_paid_items, na.rm = TRUE)) %>% 
+    summarise(paid_quantity = sum(paid_quantity, na.rm = TRUE)) %>% 
 #change months from numbers to letters
     mutate(paid_date_month = ym(paid_date_month),
          month_name = format(paid_date_month, "%B"),
          month_name = factor(month_name, 
                             levels = c("March", "April", "May", "June", "July", "August", "September", "October", "November", "December", "January", "February")))
+
+# Merge all tables together
+combined_health_data <- deprivation_stats %>%
+  full_join(diabetes_summary, join_by(HBcode == hbt), relationship = "many-to-many") %>%
+  left_join(population_data, join_by(HBname == hb_name))
+
+# Now calculate prescriptions per person
+combined_health_data <- combined_health_data %>%
+  group_by(HBname, month_name) %>%
+  mutate(quantity_per_head = sum(paid_quantity, na.rm = TRUE) / mean(as.numeric(hb_population))) #calculate prescriptions per person and change hb_population to numeric value instead of character
 ```
 
 
 
-```{r totalmeds_plot, echo=FALSE}
+```{message=FALSE, warning=FALSE}
 # Creating a summary table and filtering for common type 2 medications
-totalmeds_plot <- diabetes_summary %>% 
-  ggplot(aes(x = paid_date_month, y = total_items, colour = hbt)) +
-  geom_line() +                 # line plot for trends               # add points for clarity
+totalmeds_plot <- combined_health_data %>% 
+  ggplot(aes(x = paid_date_month, y = quantity_per_head)) +
+  geom_line() + #line plot for trends
+  geom_point(size = 0.1) +
   labs(
-    title = "Total Number of Diabetes Medications by Month and Health Board",
+    title = "Prescription of type 2 dabetes medications per person ",
     subtitle = "March 2020 - February 2022",
     x = "Month",
-    y = "Total Number of Medications",
-    color = "Health Board"
+    y = "Quantity per head"
   ) +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust=1)) +
-  facet_wrap(~hbt)
+  facet_wrap(~HBname)
 
 print(totalmeds_plot)
-
 ```
 
 ##### Next tasks: 1. Join the data to Scottish census to change healthboard codes to healthboard names. 2. Create a map to show the %change in type 2 medications by health board. 3. Create a table to compare type 2 diabetes prescribing across deprivation levels by linking to SIMD database. 4. Create another table/graph to further analyse results
