@@ -103,7 +103,7 @@ simd_gradient <- combined_health_data %>%
   )
 
 # Plot
-ggplot(simd_gradient, aes(x = SIMD2020v2_Decile, y = avg_qph)) +
+ggplot(simd_gradient, aes(x = SIMD2020v2_Decile, y = avg_qph)) + #MIGHT CHANGE TO QUINTILE
   geom_point(size = 3) +
   geom_line() +
   geom_smooth(method = "lm", se = F, linetype = "dashed") + #line of best fit
@@ -132,7 +132,7 @@ combined_health_data <- NHS_healthboards %>%
 hb_map_data <- combined_health_data %>%
   group_by(HBname) %>%
   summarise(avg_qph = mean(quantity_per_head, na.rm = TRUE), # average meds/person
-            avg_simd = mean(SIMD2020v2_Decile, na.rm = TRUE)) #average SIMD
+            avg_simd = mean(SIMD2020v2_Quintile, na.rm = TRUE)) #average SIMD
     
 #Plot a map
 ggplot(hb_map_data) +
