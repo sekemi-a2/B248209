@@ -19,6 +19,7 @@ library(janitor) # cleaning data
 library(gt) # tables
 library(here) # directory structure
 library(readxl) # read in excel file
+library(sf) #to read in map data
 
 #Get data from 24-month period from Mar 2020 - Feb 2022 
 #create function to read data in:
@@ -78,15 +79,14 @@ combined_health_data <- combined_health_data %>%
 # Creating a summary table and filtering for common type 2 medications
 totalmeds_plot <- combined_health_data %>% 
   ggplot(aes(x = paid_date_month, y = quantity_per_head)) +
-  geom_line() + #line plot for trends
-  geom_point(size = 0.1) +
+  geom_line(colour = "darkblue") + #line plot for trends
   labs(
-    title = "Prescription of type 2 dabetes medications per person ",
+    title = "Prescription of type 2 dabetes medications per person",
     subtitle = "March 2020 - February 2022",
     x = "Month",
     y = "Quantity per head"
   ) +
-  theme_minimal() +
+  theme_light() +
   theme(axis.text.x = element_text(angle = 45, hjust=1)) +
   facet_wrap(~HBname)
 
@@ -106,7 +106,7 @@ simd_gradient <- combined_health_data %>%
 ggplot(simd_gradient, aes(x = SIMD2020v2_Decile, y = avg_qph)) +
   geom_point(size = 3) +
   geom_line() +
-  geom_smooth(method = "lm", se = FALSE, linetype = "dashed") +
+  geom_smooth(method = "lm", se = F, linetype = "dashed") + #line of best fit
   labs(
     title = "Average Diabetes Medications per Person by SIMD Decile",
     subtitle = "National average across all Health Boards, Mar 2020 – Feb 2022",
@@ -115,5 +115,42 @@ ggplot(simd_gradient, aes(x = SIMD2020v2_Decile, y = avg_qph)) +
   ) +
   theme_minimal()
 
+```
+
+```{r}
+# load the NHS Health board Shapefile
+NHS_healthboards <- st_read(here("data/Week6_NHS_HealthBoards_2019.shp"))
+
+#Join spatial data with other health data
+combined_health_data <- NHS_healthboards %>%
+  full_join(combined_health_data, by = join_by(HBCode == HBcode))
+```
+
+
+```{r message=FALSE, warning=FALSE}
+# Combine values to gain average for each health board
+hb_map_data <- combined_health_data %>%
+  group_by(HBname) %>%
+  summarise(avg_qph = mean(quantity_per_head, na.rm = TRUE), # average meds/person
+            avg_simd = mean(SIMD2020v2_Decile, na.rm = TRUE)) #average SIMD
+    
+#Plot a map
+ggplot(hb_map_data) +
+  geom_sf(aes(fill = avg_qph), color = "white") +
+  scale_fill_distiller(
+    palette = "YlOrRd",
+    direction = 1,
+    name = "Average quantity per person"
+  ) +
+  facet_wrap(~ cut(avg_simd, breaks = 3, labels = c("High", "Medium", "Low"))) +
+  labs(
+    title = "Prescribing Burden by Area-Level SIMD",
+    subtitle = "Grouped into 3 deprivation categories"
+  ) +
+    theme_grey() + # THEME ADDED MIGHT DELETE IF NOT DIFFERENT TO AUTOMATIC THEME
+  theme(
+    plot.title = element_text(face = "bold", size = 16), 
+    plot.subtitle = element_text(size = 8)
+  )  
 ```
 
