@@ -12,6 +12,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ##### During the COVID-19 pandemic and its associated lockdowns, population health was significantly affected. Reduced physical activity, disruptions to daily routines, and increased comfort eating contributed to rising concerns about weight gain and metabolic health. Given these conditions, an increase in obesity and consequently Type 2 diabetes might be expected. This project examines how Type 2 diabetes prescribing patterns changed during the pandemic and whether these changes differed across socioeconomically deprived areas.
 
+#####Note: COVID period is classed from March 2020 - June 2021, theriod between when lockdown was introduced, and when restrictions were fully lifted
 
 ```{r message=FALSE, warning=FALSE}
 library(tidyverse)
@@ -20,13 +21,13 @@ library(gt) # tables
 library(here) # directory structure
 library(readxl) # read in excel file
 library(sf) #to read in map data
+library(plotly) #to display information when plot is hovered over
 
 #Get data from 24-month period from Mar 2020 - Feb 2022 
 #create function to read data in:
 prescriptions_data <- function() {
-  files <- c(paste0(c("mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"), "2020"),
-             paste0(c("jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"), "2021"),
-             paste0(c("jan", "feb"), "2022"))
+  files <- c(paste0(c("jan", "feb","mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"), "2020"),
+             paste0(c("jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"), "2021"))
   
   map_dfr(files, ~read_csv(here("data", paste0(.x, ".csv"))) %>%
                    clean_names() %>%
@@ -47,7 +48,6 @@ population_data <- read_csv(here("data/general_health_census.csv"), skip = 10) %
   filter(!str_detect(hb_population, "Cells")) #Removes rows with text in population (to remove copyright info)
 ```
 
-
 ```{r message=FALSE, warning=FALSE}
 diabetes_summary <- data_for_years %>%
   #filter for diabetes medications
@@ -57,10 +57,7 @@ diabetes_summary <- data_for_years %>%
     group_by(paid_date_month, hbt) %>% 
     summarise(paid_quantity = sum(paid_quantity, na.rm = TRUE)) %>% 
 #change months from numbers to letters
-    mutate(paid_date_month = ym(paid_date_month),
-         month_name = format(paid_date_month, "%B"),
-         month_name = factor(month_name, 
-                            levels = c("March", "April", "May", "June", "July", "August", "September", "October", "November", "December", "January", "February")))
+    mutate(paid_date_month = ym(paid_date_month))
 
 # Merge all tables together
 combined_health_data <- deprivation_stats %>%
@@ -69,88 +66,147 @@ combined_health_data <- deprivation_stats %>%
 
 # Now calculate prescriptions per person
 combined_health_data <- combined_health_data %>%
-  group_by(HBname, month_name) %>%
+  group_by(HBname, paid_date_month) %>%
   mutate(quantity_per_head = sum(paid_quantity, na.rm = TRUE) / mean(as.numeric(hb_population))) #calculate prescriptions per person and change hb_population to numeric value instead of character
 ```
-
-
 
 ```{r message=FALSE, warning=FALSE}
 # Creating a summary table and filtering for common type 2 medications
 totalmeds_plot <- combined_health_data %>% 
   ggplot(aes(x = paid_date_month, y = quantity_per_head)) +
-  geom_line(colour = "darkblue") + #line plot for trends
+  # Add vertical lines for COVID start and end
+  geom_vline(xintercept = as.numeric(ymd("2020-03-01")), 
+             linetype = "dashed", colour = "purple", size = 0.8) +
+  geom_vline(xintercept = as.numeric(ymd("2021-06-01")), 
+             linetype = "dashed", colour = "purple", size = 0.8) +
+  geom_line(colour = "darkblue", size = 0.5) + # Make original line lighter
   labs(
     title = "Prescription of type 2 dabetes medications per person",
-    subtitle = "March 2020 - February 2022",
+    subtitle = "January 2020 - December 2021 | Purple dashed lines: COVID period (Mar 2020 - Jun 2021)",
     x = "Month",
-    y = "Quantity per head"
+    y = "Quantity per head",
   ) +
   theme_light() +
   theme(axis.text.x = element_text(angle = 45, hjust=1)) +
-  facet_wrap(~HBname)
+  facet_wrap(~HBname, scales = "free_y")
+#labeller = label_wrap_gen(width = 10) ADD TO FACET WRAP
 
 print(totalmeds_plot)
+
+#MENTION FREED SCALES as there were vast differences in prescription across healthboards
 ```
+
+##### An overall upward trend was seen during COVID and this increase accelerated post COVID. Changes in the trend during the COVID perios may be due to the enforcement and lifting of lockdown rules. To further examine and link trends to deprived areas. I will be using January 2020 (baseline), January 2021 (third lockdown), December 2022 (post pandemic/current trend). - I chose these seasons to balance temporal evidence (pandemic stages) and seasonal consistency (comparing winter months avoids confounding by seasonality)
+
 
 ```{r message=FALSE, warning=FALSE}
-# Collapse across Health Boards → compute national average per decile
-simd_gradient <- combined_health_data %>%
-  group_by(SIMD2020v2_Decile) %>%
-  summarise(
-    avg_qph = mean(quantity_per_head, na.rm = TRUE),
-    .groups = "drop"
-  )
+key_months_data <- combined_health_data %>% 
+  filter(paid_date_month %in% as.Date(c("2020-01-01", "2021-12-01"))) %>% 
+  group_by(HBname) %>% 
+  mutate(covid_phase = case_when(
+    paid_date_month == as.Date("2020-01-01") ~ "pre_covid",
+    paid_date_month == as.Date("2021-12-01") ~ "post_covid"))
 
-# Plot
-ggplot(simd_gradient, aes(x = SIMD2020v2_Decile, y = avg_qph)) + #MIGHT CHANGE TO QUINTILE
-  geom_point(size = 3) +
-  geom_line() +
-  geom_smooth(method = "lm", se = F, linetype = "dashed") + #line of best fit
-  labs(
-    title = "Average Diabetes Medications per Person by SIMD Decile",
-    subtitle = "National average across all Health Boards, Mar 2020 – Feb 2022",
-    x = "SIMD Decile (1 = Most Deprived)",
-    y = "Avg. Medications per Person"
-  ) +
-  theme_minimal()
+# Summarise by health board and COVID phase
+lollipop_data <- key_months_data %>%
+  group_by(HBname, covid_phase) %>% 
+  summarise(avg_qph = mean(quantity_per_head, na.rm = TRUE),
+            avg_simd = mean(SIMD2020v2_Decile, na.rm = TRUE)) %>%
+  # Pivot to get Pre and Post columns for connecting lines
+  pivot_wider(names_from = covid_phase, values_from = avg_qph) %>%
+  mutate(percent_change = ((post_covid - pre_covid)/pre_covid)*100) %>% #to calculate percent change
+  # Arrange by descending avg_simd
+  arrange(desc(avg_simd)) %>%
+  ungroup() %>% #before creating a factor so hat HBname can be arranged in order of avg_simd in graph
+  # Create factor to preserve ordering in plot
+  mutate(HBname = factor(HBname, levels = HBname))
 
+lollipop_graph <- lollipop_data %>% 
+  ggplot() +
+  geom_segment(aes(x = HBname, xend = HBname, y = pre_covid, yend = post_covid), 
+               color = "grey") +
+  geom_point(aes(x = HBname, y = pre_covid), 
+             color = rgb(0.2, 0.7, 0.1, 0.5), size = 3) +
+  geom_point(aes(x = HBname, y = post_covid), 
+             color = rgb(0.7, 0.2, 0.1, 0.5), size = 3) +
+  coord_flip() +
+  theme_minimal() +
+  theme(legend.position = "none") +
+  xlab("") +
+  ylab("Average Quantity Per Head") +
+  ggtitle("Change in Quantity Per Head: Pre-COVID vs Post-COVID",
+          subtitle = "NHS Health Boards ordered by average SIMD decile (descending)")
+
+# Display the plot
+print(lollipop_graph)
 ```
 
-```{r}
+
+```{r message=FALSE, warning=FALSE}
 # load the NHS Health board Shapefile
 NHS_healthboards <- st_read(here("data/Week6_NHS_HealthBoards_2019.shp"))
 
 #Join spatial data with other health data
-combined_health_data <- NHS_healthboards %>%
-  full_join(combined_health_data, by = join_by(HBCode == HBcode))
+summary_map <- NHS_healthboards %>%
+  full_join(lollipop_data, by = join_by(HBName == HBname))
+```
+
+```{r message=FALSE, warning=FALSE}
+# Plot percentage change map
+plot_map <- summary_map %>% 
+  ggplot() +
+  geom_sf(aes(fill = percent_change, text = paste0("Health Board: ", HBName, "\n", round(percent_change,2), "%")), color = "white", size = 0.3) +
+  scale_fill_viridis_c(option = "plasma", 
+                       name = "% Change in Average Quantity per Head") +
+  labs(
+    title = "Percentage Change in Average Type 2 Diabetes Prescriptions Per Head \nPre-COVID → Post-COVID",
+    caption = "Data from Jan 2020 and Dec 2021"
+  ) +
+  theme_minimal() +
+  theme(legend.position = "right", plot.title = element_text(face = "bold"))
+
+interactive_map <- ggplotly(plot_map, tooltip = "text")
+
+interactive_map
 ```
 
 
 ```{r message=FALSE, warning=FALSE}
-# Combine values to gain average for each health board
-hb_map_data <- combined_health_data %>%
-  group_by(HBname) %>%
-  summarise(avg_qph = mean(quantity_per_head, na.rm = TRUE), # average meds/person
-            avg_simd = mean(SIMD2020v2_Quintile, na.rm = TRUE)) #average SIMD
-    
-#Plot a map
-ggplot(hb_map_data) +
-  geom_sf(aes(fill = avg_qph), color = "white") +
-  scale_fill_distiller(
-    palette = "YlOrRd",
-    direction = 1,
-    name = "Average quantity per person"
-  ) +
-  facet_wrap(~ cut(avg_simd, breaks = 3, labels = c("High", "Medium", "Low"))) +
-  labs(
-    title = "Prescribing Burden by Area-Level SIMD",
-    subtitle = "Grouped into 3 deprivation categories"
-  ) +
-    theme_grey() + # THEME ADDED MIGHT DELETE IF NOT DIFFERENT TO AUTOMATIC THEME
-  theme(
-    plot.title = element_text(face = "bold", size = 16), 
-    plot.subtitle = element_text(size = 8)
-  )  
+ranked_table <- lollipop_data %>%  # replace with your dataframe name
+  arrange(avg_simd) %>% 
+  mutate(Rank = row_number()) %>% 
+  select(c(Rank, HBname, pre_covid, percent_change))
+
+# ---- Step 2: GT table ----
+ranked_table %>%
+  gt() %>%
+  cols_label(
+    Rank = "Rank",
+    HBname = "Health Board",
+    pre_covid = "Pre-COVID Level (per head)",
+    #absolute_change = "Absolute Increase",
+    percent_change = "Percentage Increase (%)"
+  ) %>%
+  fmt_number(
+    columns = c(pre_covid),
+    decimals = 2
+  ) %>%
+  fmt_number(
+    columns = percent_change,
+    decimals = 1
+  ) %>%
+  tab_header(
+    title = " Health Boards by Percentage Increase in Type 2 Diabetes Prescriptions",
+    subtitle = "Comparing pre-COVID (Jan 2020) to post-COVID (Dec 2021)"
+  )
 ```
 
+```
+
+##MAKE DATA PER 100,000 PEOPLE ++ Add what line says, + DOUBLE CHECK LABELS + HOVER OVER MAP SHOULD SAY HEALTHBOARD NAME
+
+#### Questions:
+
+#### 1.  In feedback what do you mean by showing links for reproducibility? Is code enough? Or do we need to show/write how we got to the links? #### Write overall urls
+#### 2.  For deprived areas, is an overall view of healthboards enough or would you want to see simd inside datazones? classify each healthboard as a colour, average prescriping would get lighter or darker
+#### 3.  How do I make the figures wider so it doesn't cut off names?
