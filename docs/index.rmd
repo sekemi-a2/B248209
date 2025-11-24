@@ -20,6 +20,9 @@ This report focuses on common Type 2 diabetes medications, including biguanides 
 For the purpose of this study, the COVID-19 period is defined as March 2020 to June 2021, spanning the introduction of lockdown measures to the lifting of restrictions. The analysis includes all forms of Type 2 diabetes medications recorded in the dataset.
 
 ## Methods
+The links were taken from the open data scotland and scottish census for population data.
+
+For the purpose of this study, the COVID-19 period is defined as March 2020 to June 2021, spanning the introduction of lockdown measures to the lifting of restrictions. The analysis includes all forms of Type 2 diabetes medications recorded in the dataset.
 
 ```{r message=FALSE, warning=FALSE}
 library(tidyverse)
@@ -57,6 +60,7 @@ population_data <- read_csv(here("data/general_health_census.csv"), skip = 10) %
 ```
 
 ## Results
+This graph explored the relationship between....
 ```{r message=FALSE, warning=FALSE}
 diabetes_summary <- data_for_years %>%
   #filter for diabetes medications
@@ -104,8 +108,7 @@ print(totalmeds_plot)
 
 #MENTION FREED SCALES as there were vast differences in prescription across healthboards
 ```
-
-##### An overall upward trend was seen during COVID and this increase accelerated post COVID. Changes in the trend during the COVID perios may be due to the enforcement and lifting of lockdown rules. To further examine and link trends to deprived areas. I will be using January 2020 (baseline), January 2021 (third lockdown), December 2022 (post pandemic/current trend). - I chose these seasons to balance temporal evidence (pandemic stages) and seasonal consistency (comparing winter months avoids confounding by seasonality)
+An overall upward trend was seen during COVID and this increase accelerated post COVID. Changes in the trend during the COVID perios may be due to the enforcement and lifting of lockdown rules. To further examine and link trends to deprived areas. I will be using January 2020 (baseline), January 2021 (third lockdown), December 2022 (post pandemic/current trend). - I chose these seasons to balance temporal evidence (pandemic stages) and seasonal consistency (comparing winter months avoids confounding by seasonality)
 
 ```{r message=FALSE, warning=FALSE}
 key_months_data <- combined_health_data %>% 
@@ -150,7 +153,7 @@ print(lollipop_graph)
 
 #add text to graph, "click to display name of healthboard"
 ```
-
+This shows that Glasgow was the third highestdeprived and has the highest increase in average prescriptions per head. However this is absolute changes for further analysis, the percentage change was calculated.
 ```{r message=FALSE, warning=FALSE}
 # load the NHS Health board Shapefile
 NHS_healthboards <- suppressMessages(st_read(here("data/Week6_NHS_HealthBoards_2019.shp"), quiet = TRUE)) #reads in file and hides reading in message
@@ -178,7 +181,7 @@ interactive_map <- ggplotly(plot_map, tooltip = "text")
 
 interactive_map
 ```
-
+This revealed that the Western Isles had the highest percentage increase which as also part of the Top 5 most deprived areas. However other most deprived areas such as Ayrshire and Arran, Greater Glasgow and Clyde had one of the lowest percentage increases. A Summary table was produced to better display and understand the relationship between deprivation, absolute and percentage increase in avrage type 2 diabetes medication per head.
 ```{r message=FALSE, warning=FALSE}
 ranked_table <- lollipop_data %>%  # replace with your dataframe name
   arrange(avg_simd) %>% 
@@ -224,12 +227,10 @@ ranked_table %>%
 
 ## Conclusion
 
-#### Add what line says, + DOUBLE CHECK LABELS + HOVER OVER MAP SHOULD SAY HEALTHBOARD NAME
+HOVER OVER MAP SHOULD SAY HEALTHBOARD NAME
 
-#### Questions:
+Questions:
 
-#### 1. In feedback what do you mean by showing links for reproducibility? Is code enough? Or do we need to show/write how we got to the links? \#### Write overall urls
+1. In feedback what do you mean by showing links for reproducibility? Is code enough? Or do we need to show/write how we got to the links? \#### Write overall urls
 
-#### 2. For deprived areas, is an overall view of healthboards enough or would you want to see simd inside datazones? classify each healthboard as a colour, average prescriping would get lighter or darker
-
-#### 3. How do I make the figures wider so it doesn't cut off names?
+How do I make figures wider so it doesn't cut off names?
