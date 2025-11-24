@@ -1,18 +1,25 @@
 ---
-title: "Assessment"
-output: html_document
+title: "The impact of the COVID-19 pandemic on type 2 diabetes medication prescribing patterns across Scotland, and how this varies across deprived areas"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    number_sections: true
+    theme: lumen
+    highlight: tango
+    code_folding: hide
 date: "2025-10-31"
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
+## Introduction
 
-### The impact of COVID-19 pandemic on Type 2 diabetes medication prescribing patterns, and how prescription patterns vary across deprived areas?
+The COVID-19 pandemic and its lockdown had significant effects on population health. Changes in lifestyle, such as reduced physical activity, disrupted routines, and increased comfort eating, raised concerns about weight gain and metabolic health, potentially increasing Type 2 diabetes. At the same time, healthcare access was disrupted, with less appointments available, which could have affected the diagnosis and management of chronic conditions.
 
-##### During the COVID-19 pandemic and its associated lockdowns, population health was significantly affected. Reduced physical activity, disruptions to daily routines, and increased comfort eating contributed to rising concerns about weight gain and metabolic health. Given these conditions, an increase in obesity and consequently Type 2 diabetes might be expected. This project examines how Type 2 diabetes prescribing patterns changed during the pandemic and whether these changes differed across socioeconomically deprived areas.
+This report focuses on common Type 2 diabetes medications, including biguanides (metformin), SGLT2 inhibitors (gliflozins), sulphonylureas (gliclazide, glimepiride), DDP-4 inhibitors (gliptins),  GLP-1 receptor agonists (glutides), thiazolidinediones (glitazone), and examines how prescribing patterns changed during COVID-19 pandemic across Scotland. This study is motivated by an interest in understanding how the dual pressures of increased chronic disease and barriers to healthcare access during the pandemic influenced Type 2 medication use. It is hypothesized that overall prescribing was disrupted during pandemic, with a potential rebound in prescriptions post-pandemic, and that these changes may have been more pronounced in socioeconomically deprived areas, thereby potentially exacerbating existing health inequalities
 
-#####Note: COVID period is classed from March 2020 - June 2021, theriod between when lockdown was introduced, and when restrictions were fully lifted
+For the purpose of this study, the COVID-19 period is defined as March 2020 to June 2021, spanning the introduction of lockdown measures to the lifting of restrictions. The analysis includes all forms of Type 2 diabetes medications recorded in the dataset.
+
+## Methods
 
 ```{r message=FALSE, warning=FALSE}
 library(tidyverse)
@@ -22,6 +29,7 @@ library(here) # directory structure
 library(readxl) # read in excel file
 library(sf) #to read in map data
 library(plotly) #to display information when plot is hovered over
+library(scales) #to add colour scheme
 
 #Get data from 24-month period from Mar 2020 - Feb 2022 
 #create function to read data in:
@@ -48,6 +56,7 @@ population_data <- read_csv(here("data/general_health_census.csv"), skip = 10) %
   filter(!str_detect(hb_population, "Cells")) #Removes rows with text in population (to remove copyright info)
 ```
 
+## Results
 ```{r message=FALSE, warning=FALSE}
 diabetes_summary <- data_for_years %>%
   #filter for diabetes medications
@@ -61,7 +70,7 @@ diabetes_summary <- data_for_years %>%
 
 # Merge all tables together
 combined_health_data <- deprivation_stats %>%
-  full_join(diabetes_summary, join_by(HBcode == hbt), relationship = "many-to-many") %>%
+  full_join(diabetes_summary, join_by(HBcode == hbt)) %>%
   left_join(population_data, join_by(HBname == hb_name))
 
 # Now calculate prescriptions per person
@@ -76,10 +85,10 @@ totalmeds_plot <- combined_health_data %>%
   ggplot(aes(x = paid_date_month, y = quantity_per_head)) +
   # Add vertical lines for COVID start and end
   geom_vline(xintercept = as.numeric(ymd("2020-03-01")), 
-             linetype = "dashed", colour = "purple", size = 0.8) +
+             linetype = "dashed", colour = "orange", size = 0.8) +
   geom_vline(xintercept = as.numeric(ymd("2021-06-01")), 
-             linetype = "dashed", colour = "purple", size = 0.8) +
-  geom_line(colour = "darkblue", size = 0.5) + # Make original line lighter
+             linetype = "dashed", colour = "orange", size = 0.8) +
+  geom_line(colour = "purple", size = 0.5) + # Make original line lighter
   labs(
     title = "Prescription of type 2 dabetes medications per person",
     subtitle = "January 2020 - December 2021 | Purple dashed lines: COVID period (Mar 2020 - Jun 2021)",
@@ -97,7 +106,6 @@ print(totalmeds_plot)
 ```
 
 ##### An overall upward trend was seen during COVID and this increase accelerated post COVID. Changes in the trend during the COVID perios may be due to the enforcement and lifting of lockdown rules. To further examine and link trends to deprived areas. I will be using January 2020 (baseline), January 2021 (third lockdown), December 2022 (post pandemic/current trend). - I chose these seasons to balance temporal evidence (pandemic stages) and seasonal consistency (comparing winter months avoids confounding by seasonality)
-
 
 ```{r message=FALSE, warning=FALSE}
 key_months_data <- combined_health_data %>% 
@@ -126,9 +134,9 @@ lollipop_graph <- lollipop_data %>%
   geom_segment(aes(x = HBname, xend = HBname, y = pre_covid, yend = post_covid), 
                color = "grey") +
   geom_point(aes(x = HBname, y = pre_covid), 
-             color = rgb(0.2, 0.7, 0.1, 0.5), size = 3) +
+             color = "orange", size = 3) +
   geom_point(aes(x = HBname, y = post_covid), 
-             color = rgb(0.7, 0.2, 0.1, 0.5), size = 3) +
+             color = "purple", size = 3) +
   coord_flip() +
   theme_minimal() +
   theme(legend.position = "none") +
@@ -139,12 +147,13 @@ lollipop_graph <- lollipop_data %>%
 
 # Display the plot
 print(lollipop_graph)
-```
 
+#add text to graph, "click to display name of healthboard"
+```
 
 ```{r message=FALSE, warning=FALSE}
 # load the NHS Health board Shapefile
-NHS_healthboards <- st_read(here("data/Week6_NHS_HealthBoards_2019.shp"))
+NHS_healthboards <- suppressMessages(st_read(here("data/Week6_NHS_HealthBoards_2019.shp"), quiet = TRUE)) #reads in file and hides reading in message
 
 #Join spatial data with other health data
 summary_map <- NHS_healthboards %>%
@@ -170,43 +179,57 @@ interactive_map <- ggplotly(plot_map, tooltip = "text")
 interactive_map
 ```
 
-
 ```{r message=FALSE, warning=FALSE}
 ranked_table <- lollipop_data %>%  # replace with your dataframe name
   arrange(avg_simd) %>% 
-  mutate(Rank = row_number()) %>% 
-  select(c(Rank, HBname, pre_covid, percent_change))
+  mutate(Rank = row_number(),
+         absolute_change = (post_covid - pre_covid)) %>% 
+  select(c(Rank, HBname, pre_covid, absolute_change, percent_change))
 
 # ---- Step 2: GT table ----
 ranked_table %>%
   gt() %>%
   cols_label(
-    Rank = "Rank",
+    Rank = "Rank (Most to Least Deprived)",
     HBname = "Health Board",
     pre_covid = "Pre-COVID Level (per head)",
-    #absolute_change = "Absolute Increase",
+    absolute_change = "Absolute Increase",
     percent_change = "Percentage Increase (%)"
   ) %>%
   fmt_number(
-    columns = c(pre_covid),
+    columns = c(pre_covid, absolute_change),
     decimals = 2
   ) %>%
   fmt_number(
     columns = percent_change,
-    decimals = 1
+    decimals = 2
   ) %>%
   tab_header(
     title = " Health Boards by Percentage Increase in Type 2 Diabetes Prescriptions",
     subtitle = "Comparing pre-COVID (Jan 2020) to post-COVID (Dec 2021)"
+  ) %>% 
+#Colour scale for Absolute Increase
+  data_color(
+    columns = absolute_change,
+    method = "numeric",
+    palette = "Oranges"
+  ) %>%
+  # Colour scale for Percentage Increase
+  data_color(
+    columns = percent_change,
+    method = "numeric",
+    palette = "Purples"
   )
 ```
 
-```
+## Conclusion
 
-##MAKE DATA PER 100,000 PEOPLE ++ Add what line says, + DOUBLE CHECK LABELS + HOVER OVER MAP SHOULD SAY HEALTHBOARD NAME
+#### Add what line says, + DOUBLE CHECK LABELS + HOVER OVER MAP SHOULD SAY HEALTHBOARD NAME
 
 #### Questions:
 
-#### 1.  In feedback what do you mean by showing links for reproducibility? Is code enough? Or do we need to show/write how we got to the links? #### Write overall urls
-#### 2.  For deprived areas, is an overall view of healthboards enough or would you want to see simd inside datazones? classify each healthboard as a colour, average prescriping would get lighter or darker
-#### 3.  How do I make the figures wider so it doesn't cut off names?
+#### 1. In feedback what do you mean by showing links for reproducibility? Is code enough? Or do we need to show/write how we got to the links? \#### Write overall urls
+
+#### 2. For deprived areas, is an overall view of healthboards enough or would you want to see simd inside datazones? classify each healthboard as a colour, average prescriping would get lighter or darker
+
+#### 3. How do I make the figures wider so it doesn't cut off names?
