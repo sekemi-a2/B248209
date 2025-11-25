@@ -13,29 +13,32 @@ date: "2025-10-31"
 
 ## Introduction
 
-The COVID-19 pandemic and its lockdown had significant effects on population health. Changes in lifestyle, such as reduced physical activity, disrupted routines, and increased comfort eating, raised concerns about weight gain and metabolic health, potentially increasing Type 2 diabetes. At the same time, healthcare access was disrupted, with less appointments available, which could have affected the diagnosis and management of chronic conditions.
+Type 2 diabetes is a major public health concern in Scotland, with its prevalence risng by approximately 40% in the last decade (D. Colhoun & McKnight, 2020). Effective medication management is important for preventing complications and reducing healthcare burden associated with the condition. Prescribing patterns therefore provide valuable insights into population health, but they are ssensitive to changes in healthcare access, media influence and wider social conditions.
 
-This report focuses on common Type 2 diabetes medications, including biguanides (metformin), SGLT2 inhibitors (gliflozins), sulphonylureas (gliclazide, glimepiride), DDP-4 inhibitors (gliptins),  GLP-1 receptor agonists (glutides), thiazolidinediones (glitazone), and examines how prescribing patterns changed during COVID-19 pandemic across Scotland. This study is motivated by an interest in understanding how the dual pressures of increased chronic disease and barriers to healthcare access during the pandemic influenced Type 2 medication use. It is hypothesized that overall prescribing was disrupted during pandemic, with a potential rebound in prescriptions post-pandemic, and that these changes may have been more pronounced in socioeconomically deprived areas, thereby potentially exacerbating existing health inequalities
+The COVID-19 pandemic introduced unprecedented disruption to daily life. Lockdowns contributed to lifestyle changes associated with increased metabolic risk, while restricted access to healthcare may have affected diagnosis and routine management, which may have impacted existing socioeconomic disparities. Diabetes prevalence is 80% higher in the most deprived fifth of the population than in the fifth most affluent, and the gap is widening (D. Colhoun & McKnight, 2020).
 
-For the purpose of this study, the COVID-19 period is defined as March 2020 to June 2021, spanning the introduction of lockdown measures to the lifting of restrictions. The analysis includes all forms of Type 2 diabetes medications recorded in the dataset.
+This report examines how prescribing of common Type 2 medications, changed during the COVID-19 pandemic across Scotland. The aim is to assess whether the pandemic altered prescribing patterns, and whether these changes differed by levels of socioeconomic deprivation.
 
 ## Methods
-The links were taken from the open data scotland and scottish census for population data.
 
-For the purpose of this study, the COVID-19 period is defined as March 2020 to June 2021, spanning the introduction of lockdown measures to the lifting of restrictions. The analysis includes all forms of Type 2 diabetes medications recorded in the dataset.
+Prescription data were obtained from Public Health Scotland’s Prescriptions in the Community dataset, specifically the “Data by Prescriber Location” records, covering the period from January 2020 to December 2021. Population estimates were drawn from the National Records of Scotland 2022 census release (Table UV302: General Health, Health Board Area, 2019). Socioeconomic deprivation was assessed using the Scottish Index of Multiple Deprivation (SIMD) 2020v2 data zone lookup file. NHS Scotland health board boundaries were incorporated using publicly available shapefiles to enable spatial analysis and visualisation  in prescribing across regions.
+
+The data was then filtered for type 2 diabetes medications including biguanides (metformin), SGLT2 inhibitors (gliflozins), sulphonylureas (gliclazide, glimepiride), DDP-4 inhibitors (gliptins),  GLP-1 receptor agonists (glutides), thiazolidinediones (glitazone), with all available formulations. These filtered data were then processed to generate visual summaries and descriptive analyses.
+
+For the purpose of this study, the COVID-19 period is defined as March 2020 to June 2021, covering the introduction of national lockdown measures through to the lifting of major covid restrictions.
 
 ```{r message=FALSE, warning=FALSE}
 library(tidyverse)
 library(janitor) # cleaning data
-library(gt) # tables
+library(gt) # to create pretty tables
 library(here) # directory structure
 library(readxl) # read in excel file
-library(sf) #to read in map data
-library(plotly) #to display information when plot is hovered over
-library(scales) #to add colour scheme
+library(sf) # to read in map data
+library(plotly) # for interactive plot
+library(scales) # to add colour scheme
 
-#Get data from 24-month period from Mar 2020 - Feb 2022 
-#create function to read data in:
+# Get data from 24-month period from Jan 2020 - Dec 2021
+# Create function to read data in:
 prescriptions_data <- function() {
   files <- c(paste0(c("jan", "feb","mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"), "2020"),
              paste0(c("jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"), "2021"))
@@ -50,37 +53,36 @@ deprivation_stats <- read_excel(here("data/SIMD.xlsx"))
 ```
 
 ```{r message=FALSE, warning=FALSE}
-#Read in and tidy healthboard population database
+# Read in and tidy health board population database
 population_data <- read_csv(here("data/general_health_census.csv"), skip = 10) %>% 
-  filter(!is.na('All people')) %>%  #Removes NA
+  filter(!is.na('All people')) %>%  # Removes NA
   rename(hb_name = "General health",
          hb_population = "All people") %>% 
   select(hb_name, hb_population) %>% 
-  filter(!str_detect(hb_population, "Cells")) #Removes rows with text in population (to remove copyright info)
+  filter(!str_detect(hb_population, "Cells")) # Removes rows with text in population (to remove copyright info from data)
 ```
 
 ## Results
 This graph explored the relationship between....
 ```{r message=FALSE, warning=FALSE}
+# Filter for diabetes medications
 diabetes_summary <- data_for_years %>%
-  #filter for diabetes medications
   filter(!is.na(bnf_item_description)) %>% 
   filter(str_detect(bnf_item_description,
-                    regex("metformin|gliptin|gliflozin|glutide|glitazone|gliclazide|glimepiride", ignore_case = TRUE))) %>% 
+                    regex("metformin|gliptin|gliflozin|glutide|glitazone|gliclazide|glimepiride", ignore_case = TRUE))) %>% # Search for common diabetes medications whilst gnoring upper and lower cases
     group_by(paid_date_month, hbt) %>% 
     summarise(paid_quantity = sum(paid_quantity, na.rm = TRUE)) %>% 
-#change months from numbers to letters
-    mutate(paid_date_month = ym(paid_date_month))
+    mutate(paid_date_month = ym(paid_date_month)) # Change months from numbers to letters
 
 # Merge all tables together
 combined_health_data <- deprivation_stats %>%
   full_join(diabetes_summary, join_by(HBcode == hbt)) %>%
   left_join(population_data, join_by(HBname == hb_name))
 
-# Now calculate prescriptions per person
+# To calculate prescriptions per person
 combined_health_data <- combined_health_data %>%
   group_by(HBname, paid_date_month) %>%
-  mutate(quantity_per_head = sum(paid_quantity, na.rm = TRUE) / mean(as.numeric(hb_population))) #calculate prescriptions per person and change hb_population to numeric value instead of character
+  mutate(quantity_per_head = sum(paid_quantity, na.rm = TRUE) / mean(as.numeric(hb_population))) # Calculate prescriptions per person and change hb_population to numeric value instead of character
 ```
 
 ```{r message=FALSE, warning=FALSE}
@@ -89,20 +91,18 @@ totalmeds_plot <- combined_health_data %>%
   ggplot(aes(x = paid_date_month, y = quantity_per_head)) +
   # Add vertical lines for COVID start and end
   geom_vline(xintercept = as.numeric(ymd("2020-03-01")), 
-             linetype = "dashed", colour = "orange", size = 0.8) +
+             linetype = "dashed", colour = "orange") +
   geom_vline(xintercept = as.numeric(ymd("2021-06-01")), 
-             linetype = "dashed", colour = "orange", size = 0.8) +
-  geom_line(colour = "purple", size = 0.5) + # Make original line lighter
+             linetype = "dashed", colour = "orange") +
+  geom_line(colour = "purple") +
   labs(
-    title = "Prescription of type 2 dabetes medications per person",
-    subtitle = "January 2020 - December 2021 | Purple dashed lines: COVID period (Mar 2020 - Jun 2021)",
+    title = "Type 2 diabetes medications per person across NHS Healthboards",
+    subtitle = "January 2020 - December 2021 | Orange dashed lines: COVID period (Mar 2020 - Jun 2021)",
     x = "Month",
-    y = "Quantity per head",
-  ) +
+    y = "Quantity per head") +
   theme_light() +
-  theme(axis.text.x = element_text(angle = 45, hjust=1)) +
+  theme(axis.text.x = element_text(angle = 45, hjust=1), legend.position = "bottom", plot.title = element_text(face = "bold")) +
   facet_wrap(~HBname, scales = "free_y")
-#labeller = label_wrap_gen(width = 10) ADD TO FACET WRAP
 
 print(totalmeds_plot)
 
@@ -125,7 +125,7 @@ lollipop_data <- key_months_data %>%
             avg_simd = mean(SIMD2020v2_Decile, na.rm = TRUE)) %>%
   # Pivot to get Pre and Post columns for connecting lines
   pivot_wider(names_from = covid_phase, values_from = avg_qph) %>%
-  mutate(percent_change = ((post_covid - pre_covid)/pre_covid)*100) %>% #to calculate percent change
+  mutate(percent_change = round(((post_covid - pre_covid)/pre_covid)*100, 2)) %>% # To calculate percent change and round to 2 d.p
   # Arrange by descending avg_simd
   arrange(desc(avg_simd)) %>%
   ungroup() %>% #before creating a factor so hat HBname can be arranged in order of avg_simd in graph
@@ -136,22 +136,25 @@ lollipop_graph <- lollipop_data %>%
   ggplot() +
   geom_segment(aes(x = HBname, xend = HBname, y = pre_covid, yend = post_covid), 
                color = "grey") +
-  geom_point(aes(x = HBname, y = pre_covid), 
+  geom_point(aes(x = HBname, y = pre_covid,
+                 text = round(pre_covid)), 
              color = "orange", size = 3) +
-  geom_point(aes(x = HBname, y = post_covid), 
+  geom_point(aes(x = HBname, y = post_covid,
+                 text = round(post_covid)), 
              color = "purple", size = 3) +
   coord_flip() +
   theme_minimal() +
-  theme(legend.position = "none") +
+  theme(plot.title = element_text(face = "bold")) +
   xlab("") +
   ylab("Average Quantity Per Head") +
   ggtitle("Change in Quantity Per Head: Pre-COVID vs Post-COVID",
-          subtitle = "NHS Health Boards ordered by average SIMD decile (descending)")
+          subtitle = "NHS Health Boards ordered by average SIMD decile (most to least deprived) \n Data from Jan 2020 and Dec 2021")
 
-# Display the plot
-print(lollipop_graph)
+# Convert to interactive plotly graph
+lollipop_interactive <- ggplotly(lollipop_graph, tooltip = "text")
 
-#add text to graph, "click to display name of healthboard"
+# Display the interactive plot
+lollipop_interactive
 ```
 This shows that Glasgow was the third highestdeprived and has the highest increase in average prescriptions per head. However this is absolute changes for further analysis, the percentage change was calculated.
 ```{r message=FALSE, warning=FALSE}
@@ -160,14 +163,15 @@ NHS_healthboards <- suppressMessages(st_read(here("data/Week6_NHS_HealthBoards_2
 
 #Join spatial data with other health data
 summary_map <- NHS_healthboards %>%
-  full_join(lollipop_data, by = join_by(HBName == HBname))
+  full_join(lollipop_data, by = join_by(HBName == HBname)) %>% 
+  rename(HBname = HBName) # Change column name for consistency
 ```
 
 ```{r message=FALSE, warning=FALSE}
 # Plot percentage change map
 plot_map <- summary_map %>% 
   ggplot() +
-  geom_sf(aes(fill = percent_change, text = paste0("Health Board: ", HBName, "\n", round(percent_change,2), "%")), color = "white", size = 0.3) +
+  geom_sf(aes(fill = percent_change, text = paste0("Health Board: ", HBname, "\n", round(percent_change,2), "%")), color = "white", size = 0.3) +
   scale_fill_viridis_c(option = "plasma", 
                        name = "% Change in Average Quantity per Head") +
   labs(
@@ -180,33 +184,29 @@ plot_map <- summary_map %>%
 interactive_map <- ggplotly(plot_map, tooltip = "text")
 
 interactive_map
+#Add click to see name of healthboard and exact percentage number
 ```
 This revealed that the Western Isles had the highest percentage increase which as also part of the Top 5 most deprived areas. However other most deprived areas such as Ayrshire and Arran, Greater Glasgow and Clyde had one of the lowest percentage increases. A Summary table was produced to better display and understand the relationship between deprivation, absolute and percentage increase in avrage type 2 diabetes medication per head.
 ```{r message=FALSE, warning=FALSE}
 ranked_table <- lollipop_data %>%  # replace with your dataframe name
   arrange(avg_simd) %>% 
   mutate(Rank = row_number(),
-         absolute_change = (post_covid - pre_covid)) %>% 
+         absolute_change = round(post_covid - pre_covid, 2)) %>%
   select(c(Rank, HBname, pre_covid, absolute_change, percent_change))
 
 # ---- Step 2: GT table ----
 ranked_table %>%
   gt() %>%
   cols_label(
-    Rank = "Rank (Most to Least Deprived)",
+    Rank = html("Rank<br>(Most to Least Deprived)"),
     HBname = "Health Board",
     pre_covid = "Pre-COVID Level (per head)",
     absolute_change = "Absolute Increase",
     percent_change = "Percentage Increase (%)"
   ) %>%
   fmt_number(
-    columns = c(pre_covid, absolute_change),
-    decimals = 2
-  ) %>%
-  fmt_number(
-    columns = percent_change,
-    decimals = 2
-  ) %>%
+    columns = c(pre_covid),
+    decimals = 0) %>%
   tab_header(
     title = " Health Boards by Percentage Increase in Type 2 Diabetes Prescriptions",
     subtitle = "Comparing pre-COVID (Jan 2020) to post-COVID (Dec 2021)"
@@ -225,12 +225,36 @@ ranked_table %>%
   )
 ```
 
-## Conclusion
+## Discussion
 
 HOVER OVER MAP SHOULD SAY HEALTHBOARD NAME
 
 Questions:
 
-1. In feedback what do you mean by showing links for reproducibility? Is code enough? Or do we need to show/write how we got to the links? \#### Write overall urls
+1. In feedback what do you mean by showing links for reproducibility? Is code enough? Or do we need to show/write how we got to the links? #### Write overall urls
 
 How do I make figures wider so it doesn't cut off names?
+
+Add 'NHS' to Healthboards. Sort out Labels of graphs. Ensure names aren't cut off g Glasgow.
+
+#### Limitations of the Study
+
+## Conclusion
+Limitations. Next Steps
+
+## References
+Diabetes in Scotland: a rising  tidehttps://www.thelancet.com/journals/landia/article/PIIS2213-8587(20)30124-8/fulltext
+
+Prescriptions in the Community https://www.opendata.nhs.scot/dataset/prescriptions-in-the-community
+
+Scottish Census: https://www.scotlandscensus.gov.uk/webapi/jsf/tableView/tableView.xhtml
+
+Scottish Index of Multiple Deprivation 2020v2 data zone lookup file https://www.gov.scot/collections/scottish-index-of-multiple-deprivation-2020/#supportingdocuments
+
+NHS shapeboard graph 
+
+
+
+
+
+
