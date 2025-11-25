@@ -72,7 +72,7 @@ First, to understand the overall pattern of prescribing during the COVID-19 pand
 diabetes_summary <- data_for_years %>%
   filter(!is.na(bnf_item_description)) %>% 
   filter(str_detect(bnf_item_description,
-                    regex("metformin|gliptin|gliflozin|glutide|glitazone|gliclazide|glimepiride", ignore_case = TRUE))) %>% # Search for common diabetes medications whilst gnoring upper and lower cases
+                    regex("metformin|gliptin|gliflozin|glutide|glitazone|gliclazide|glimepiride", ignore_case = TRUE))) %>% # Search for common diabetes medications whilst ignoring upper and lower cases
     group_by(paid_date_month, hbt) %>% 
     summarise(paid_quantity = sum(paid_quantity, na.rm = TRUE)) %>% 
     mutate(paid_date_month = ym(paid_date_month)) # Change months from numbers to letters
@@ -109,6 +109,7 @@ totalmeds_plot <- combined_health_data %>%
 
 print(totalmeds_plot)
 ```
+
 All Health Boards showed a marked decline in prescribing at the onset of COVID-19 in March 2020,, followed by gradual recovery. However, there was variation in the number of timing of subsequent troughs during the COVID-19 period, with most experiencing notable dips in early 2021. Overall, prescribing levels increased across all boards when comparing pre- and post- pandemic periods. 
 
 To quantify these changes January 2020 was selected as the pre-COVID baseline baseline and December 2022 as the post-pandemic comparison point. These timepoints reduce the influence of seasonal variation and allow for consistent comparison between more and less deprived areas. Absolute changes between pre-COVID and post-COVID prescribing were calculated and ordered by deprivation rank.
@@ -235,19 +236,15 @@ ranked_table %>%
 
 #### Relationship between baseline prescription levels and post-COVID increase
 
-Health Boards with higher pre-COVID levels (e.g. Greater Glasgow and Clyde, Lothian, Grampian) generally show the largest absolute increases, but not always the largest percentage increases. Conversely, boards with low baseline levels (e.g. Western Isles, Orkney, Shetland) often show high percentage increases despite smaller absolute numbers, reflecting a more proportional rise relative to their starting point.
+Health Boards with higher pre-COVID levels (e.g. Greater Glasgow and Clyde, Lothian, Lanarkshire) generally show the largest absolute increases, but not always the largest percentage increases. Conversely, Western Isles Health Board with a lower baseline level showed high percentage increases despite a smaller absolute number, reflecting a more proportional rise relative to Health Board's starting point.
 
 #### Deprivation and prescription increases
 
-Most deprived areas (e.g. Ayrshire and Arran, Lanarkshire, Greater Glasgow and Clyde), these boards had both high absolute increases and substantial percentage increases, suggesting COVID-19 may have exacerbated existing health inequalities. Some less deprived boards (e.g. Lothian, Highland, Tayside) also show high percentage increases, indicating that the rise in prescriptions isn't solely tied to deprivation.
-
-#### Regional variation and outliers
-
-Some smaller or remote boards (e.g. Western Isles, Orkney, Shetland) show very high percentage increases despite low absolute numbers, which might suggest local factors such as a sudden rise in diagnosis and treatment post-COVID. Lothian stands out as a board with both a mid-high baseline and a high percentage increase (24.28%), sugesting a significant overall impact.
+Most deprived areas (e.g. Ayrshire and Arran, Lanarkshire, Greater Glasgow and Clyde), these boards had both high absolute increases and substantial percentage increases, suggesting COVID-19 may have exacerbated existing health inequalities. Some less deprived boards (e.g. Lothian, Highland, Grampian) also show high percentage increases, indicating that the rise in prescriptions is not solely tied to deprivation.
 
 #### Overall Trends
 
-Across Scotland, every board saw increases in prescriptions, showing a consistent post-COVID rise in Type 2 diabetes treatment, which follows previos patterns of increases seen in Scotland (D. Colhoun & McKnight, 2020). The pattern suggests that both highly deprived boards experienced large absolute rises, while smaller or less deprived baords saw proportionally larger percentage rises, showing a pattern that even though those from more deprived areas have higher prevalence of type 2 diabetes (D. Colhoun & McKnight 2020), people from poorer backgrounds were disproportionately disadvantaged in diabetes monitoring and screening (Hollad et al, 2023).
+Across Scotland, every board saw increases in prescriptions, showing a consistent post-COVID rise in Type 2 diabetes medications. The pattern suggests that both highly deprived boards experienced large absolute rises, while smaller or less deprived boards saw proportionally larger percentage rises, showing a pattern that even though those from more deprived areas have higher prevalence of type 2 diabetes (D. Colhoun & McKnight 2020), people from poorer backgrounds were disproportionately disadvantaged in diabetes monitoring and screening (Hollad et al, 2023).
 
 ### Limitations 
 
@@ -278,6 +275,9 @@ https://www.data.gov.uk/dataset/27d0fe5f-79bb-4116-aec9-a8e565ff756a/nhs-health-
 The Effect of the COVID-19 Pandemic on HbA1c Testing: Prioritization of High-Risk Cases and Impact of Social Deprivation
 https://link.springer.com/article/10.1007/s13300-023-01380-x
 
+```{r}
+sessionInfo() # Shows exact packages used in r for reproducibility
+```
 
 
 
