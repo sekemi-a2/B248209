@@ -63,7 +63,10 @@ population_data <- read_csv(here("data/general_health_census.csv"), skip = 10) %
 ```
 
 ## Results
-This graph explored the relationship between....
+
+The results are structured to show how Type 2 diabetes prescribing changed during and after the COVID-19 pandemic across Scotland. Temporal trends are presented first, followed by comparisons of absolute and percentage changes across Health Boards. A final summary table integrates these measures to illustrate variation across Scotland.
+
+First, to understand the overall pattern of prescribing during the COVID-19 pandemic, monthly prescribing rates from January 2020 to December 2022 were examined for each Health Board. Line plots were generated using free y-scales to account for substantial differences in prescription volume between Health Boards, ensuring that trends within boards were more easily comparable.
 ```{r message=FALSE, warning=FALSE}
 # Filter for diabetes medications
 diabetes_summary <- data_for_years %>%
@@ -97,7 +100,7 @@ totalmeds_plot <- combined_health_data %>%
   geom_line(colour = "purple") +
   labs(
     title = "Type 2 diabetes medications per person across NHS Healthboards",
-    subtitle = "January 2020 - December 2021 | Orange dashed lines: COVID period (Mar 2020 - Jun 2021)",
+    subtitle = "January 2020 - December 2021 | Orange dashed lines: COVID-19 period (Mar 2020 - Jun 2021)",
     x = "Month",
     y = "Quantity per head") +
   theme_light() +
@@ -105,11 +108,10 @@ totalmeds_plot <- combined_health_data %>%
   facet_wrap(~HBname, scales = "free_y")
 
 print(totalmeds_plot)
-
-#MENTION FREED SCALES as there were vast differences in prescription across healthboards
 ```
-An overall upward trend was seen during COVID and this increase accelerated post COVID. Changes in the trend during the COVID perios may be due to the enforcement and lifting of lockdown rules. To further examine and link trends to deprived areas. I will be using January 2020 (baseline), January 2021 (third lockdown), December 2022 (post pandemic/current trend). - I chose these seasons to balance temporal evidence (pandemic stages) and seasonal consistency (comparing winter months avoids confounding by seasonality)
+All Health Boards showed a marked decline in prescribing at the onset of COVID-19 in March 2020,, followed by gradual recovery. However, there was variation in the number of timing of subsequent troughs during the COVID-19 period, with most experiencing notable dips in early 2021. Overall, prescribing levels increased across all boards when comparing pre- and post- pandemic periods. 
 
+To quantify these changes January 2020 was selected as the pre-COVID baseline baseline and December 2022 as the post-pandemic comparison point. These timepoints reduce the influence of seasonal variation and allow for consistent comparison between more and less deprived areas. Absolute changes between pre-COVID and post-COVID prescribing were calculated and ordered by deprivation rank.
 ```{r message=FALSE, warning=FALSE}
 key_months_data <- combined_health_data %>% 
   filter(paid_date_month %in% as.Date(c("2020-01-01", "2021-12-01"))) %>% 
@@ -156,7 +158,9 @@ lollipop_interactive <- ggplotly(lollipop_graph, tooltip = "text")
 # Display the interactive plot
 lollipop_interactive
 ```
-This shows that Glasgow was the third highestdeprived and has the highest increase in average prescriptions per head. However this is absolute changes for further analysis, the percentage change was calculated.
+Greater Glasgow and Clyde, ranked as the third most deprived region, exhibits the largest increase in Type 2 prescriptions per head. Lothian and Lanarkshire also show large increases, while boards such as Shetland and Orkney show smaller increases. 
+
+However, absolute increases are heavily influenced by population size. To assess the relative severity of change across boards, percentage increases were also examined.
 ```{r message=FALSE, warning=FALSE}
 # load the NHS Health board Shapefile
 NHS_healthboards <- suppressMessages(st_read(here("data/Week6_NHS_HealthBoards_2019.shp"), quiet = TRUE)) #reads in file and hides reading in message
@@ -198,9 +202,9 @@ ranked_table <- lollipop_data %>%  # replace with your dataframe name
 ranked_table %>%
   gt() %>%
   cols_label(
-    Rank = html("Rank<br>(Most to Least Deprived)"),
+    Rank = html("Rank<br>(Most to Least Deprived)"), # used to add break on website
     HBname = "Health Board",
-    pre_covid = "Pre-COVID Level (per head)",
+    pre_covid = html("Pre-COVID Level<br>(per head)"),
     absolute_change = "Absolute Increase",
     percent_change = "Percentage Increase (%)"
   ) %>%
@@ -243,7 +247,8 @@ Add 'NHS' to Healthboards. Sort out Labels of graphs. Ensure names aren't cut of
 Limitations. Next Steps
 
 ## References
-Diabetes in Scotland: a rising  tidehttps://www.thelancet.com/journals/landia/article/PIIS2213-8587(20)30124-8/fulltext
+Diabetes in Scotland: a rising tide
+https://www.thelancet.com/journals/landia/article/PIIS2213-8587(20)30124-8/fulltext
 
 Prescriptions in the Community https://www.opendata.nhs.scot/dataset/prescriptions-in-the-community
 
