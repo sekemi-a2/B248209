@@ -13,17 +13,17 @@ date: "2025-10-31"
 
 ## Introduction
 
-Type 2 diabetes is a major public health concern in Scotland, with its prevalence risng by approximately 40% in the last decade (Colhoun & McKnight, 2020). Effective medication management is important for preventing complications and reducing healthcare burden associated with the condition. Prescribing patterns therefore provide valuable insights into population health, but they are ssensitive to changes in healthcare access, media influence and wider social conditions.
+Type 2 diabetes is a major public health concern in Scotland, with its prevalence rising by approximately 40% in the last decade (Colhoun & McKnight, 2020). Effective medication management is important for preventing complications and reducing healthcare burden associated with the condition. Prescribing patterns therefore provide valuable insights into population health, but they are sensitive to changes in healthcare access, media influence and wider social conditions.
 
 The COVID-19 pandemic introduced unprecedented disruption to daily life. Lockdowns contributed to lifestyle changes associated with increased metabolic risk, while restricted access to healthcare may have affected diagnosis and routine management, which may have impacted existing socioeconomic disparities. Diabetes prevalence is 80% higher in the most deprived fifth of the population than in the fifth most affluent, and the gap is widening (Colhoun & McKnight, 2020).
 
-This report examines how prescribing of common Type 2 medications, changed during the COVID-19 pandemic across Scotland. The aim is to assess whether the pandemic altered prescribing patterns, and whether these changes differed by levels of socioeconomic deprivation.
+This report examines how prescribing of common Type 2 medications changed during the COVID-19 pandemic across Scotland. The aim is to assess whether the pandemic altered prescribing patterns, and whether these changes differed by levels of socioeconomic deprivation.
 
 ## Methods
 
-Prescription data were obtained from Public Health Scotland’s Prescriptions in the Community dataset, specifically the “Data by Prescriber Location” records, covering the period from January 2020 to December 2021. Population estimates were drawn from the National Records of Scotland 2022 census release (Table UV302: General Health, Health Board Area, 2019). Socioeconomic deprivation was assessed using the Scottish Index of Multiple Deprivation (SIMD) 2020v2 data zone lookup file. NHS Scotland health board boundaries were incorporated using publicly available shapefiles to enable spatial analysis and visualisation  in prescribing across regions.
+Prescription data were obtained from Public Health Scotland’s Prescriptions in the Community dataset, specifically the “Data by Prescriber Location” records, covering the period from January 2020 to December 2021. Population estimates were drawn from the National Records of Scotland 2022 census release (Table UV302: General Health, Health Board Area, 2019). Socioeconomic deprivation was assessed using the Scottish Index of Multiple Deprivation (SIMD) 2020v2 data zone lookup file. NHS Scotland health board boundaries were incorporated using publicly available shapefiles to enable spatial analysis and visualisation in prescribing across regions.
 
-The data was then filtered for type 2 diabetes medications including biguanides (metformin), SGLT2 inhibitors (gliflozins), sulphonylureas (gliclazide, glimepiride), DDP-4 inhibitors (gliptins),  GLP-1 receptor agonists (glutides), thiazolidinediones (glitazone), with all available formulations. These filtered data were then processed to generate visual summaries and descriptive analyses.
+The data was then filtered for type 2 diabetes medications including biguanides (metformin), SGLT2 inhibitors (gliflozins), sulphonylureas (gliclazide, glimepiride), DDP-4 inhibitors (gliptins), GLP-1 receptor agonists (glutides), thiazolidinediones (glitazone), with all available formulations. These filtered data were then processed to generate visual summaries and descriptive analyses.
 
 For the purpose of this study, the COVID-19 period is defined as March 2020 to June 2021, covering the introduction of national lockdown measures through to the lifting of major covid restrictions.
 
@@ -113,9 +113,9 @@ meds_per_month <- combined_health_data %>%
 meds_per_month #display result
 ```
 
-All Health Boards showed a marked decline in prescribing at the onset of COVID-19 in March 2020,, followed by gradual recovery. However, there was variation in the number of timing of subsequent troughs during the COVID-19 period, with most experiencing notable dips in early 2021. Overall, prescribing levels increased across all boards when comparing pre- and post- pandemic periods. 
+All Health Boards showed a marked decline in prescribing at the onset of COVID-19 in March 2020, followed by gradual recovery. However, there was variation in the number of timing of subsequent troughs during the COVID-19 period, with most experiencing notable dips in early 2021. Overall, prescribing levels increased across all boards when comparing pre- and post- pandemic periods.
 
-To quantify these changes January 2020 was selected as the pre-COVID baseline baseline and December 2022 as the post-pandemic comparison point. These timepoints reduce the influence of seasonal variation and allow for consistent comparison between more and less deprived areas. Absolute changes between pre-COVID and post-COVID prescribing were calculated and ordered by deprivation rank.
+To quantify these changes, January 2020 was selected as the pre-COVID baseline baseline and December 2022 as the post-pandemic comparison point. These timepoints reduce the influence of seasonal variation and allow for consistent comparison between more and less deprived areas. Absolute changes between pre-COVID and post-COVID prescribing were calculated and ordered by deprivation rank.
 
 ### Figure
 ```{r message=FALSE, warning=FALSE}
@@ -167,7 +167,7 @@ lollipop_interactive
 ```
 <p style="text-align: center;"><em>Hover over each point to view corresponding pre- and post-COVID values</em></p>
 
-Greater Glasgow and Clyde, ranked as the third most deprived region, exhibits the largest increase in Type 2 prescriptions per head. Lothian and Lanarkshire also show large increases, while boards such as Shetland and Orkney have smaller increases. Among the top five boards with the greatest increases, three of them, Ayrshire and Arran, Lanarkshire, and Greater Glasgow and Clyde are among the most deprived regions.
+Figure 3.2 illustrates a clear gradient whereby more deprived Health Boards consistently exhibited higher prescribing levels both before and after COVID-19. Ayrshire and Arran, the most deprived Health Board, recorded the highest post-COVID average quantity per head (4.69). The Western Isles, ranked fourth in deprivation, showed the largest absolute increase (0.86) between pre- and post-COVID periods. In contrast, Grampian and Shetland, the two least deprived Health Boards, had the lowest post-COVID average quantities per head (3.34), with Shetland showing the smallest increase (0.42). This pattern suggests that although prescribing increased across all Health Boards, existing socioeconomic gradients in Type 2 diabetes medication use remained evident.
 
 However, absolute increases are heavily influenced by population size. To assess the severity of change across boards, percentage increases were examined to provide insights into how dramatically prescribing rose relative to pre-COVID levels, independent of baseline prescribing levels.
 
@@ -201,10 +201,11 @@ interactive_map
 ```
 <p style="text-align: center;"><em>Hover over map to view Health Board name and corresponding percentage change</em></p>
 
-Unlike absolute increases, several less populated boards such as Western Isles experienced highest proportional growth, which was also ranked fourth highest deprivation boards. 
-Highland, Lothian and Grampian had the next highest proportional rises. However other most deprived areas such as Ayrshire and Arran, Greater Glasgow and Clyde had one of the lower percentage increases.
+When examining percentage changes (Figure 3.3), the Western Isles showed the largest proportional rise at 29.00%, despite not having the highest baseline prescribing levels. Other Health Boards with relatively high increases included Lothian (24.28%), Highland (23.48%), Grampian (22.70%), and Tayside (21.06%), indicating substantial post-COVID growth across a mix of both urban and rural regions. In contrast, Shetland had the smallest proportional increase at 14.44%, with Ayrshire and Arran and Forth Valley showing more moderate rises of 18.79% and 20.79%, respectively.
 
-To integrate these findings, a summary table presented below, showing each Health Board's deprivation rank, baseline prescribing, and the observed absolute and percentage increases, allowing direct comparison across boards.
+Several Health Boards in the South of Scotland also demonstrated comparatively lower percentage changes. Dumfries and Galloway increased by 17.98%, while the Borders showed a rise of 20.00%, both noticeably smaller than the increases observed in more deprived central belt Health Boards such as Greater Glasgow and Clyde (19.25%) and Lanarkshire (17.80%).
+
+To integrate these findings, a summary table presented below, showing each Health Board’s deprivation rank, baseline prescribing, and the observed absolute and percentage increases, allowing direct comparison across boards.
 
 ### Figure
 ```{r message=FALSE, warning=FALSE}
@@ -268,6 +269,8 @@ There are several limitations to this study. Regional differences in prescribing
 ### Next Steps
 
 Future studies could include multiple time points throughout the pandemic to capture fluctuations and provide a more detailed picture of prescribing trends. Additionally, to better understand variation across deprived areas, deprivation should be examined at a smaller geographic scale than Health Boards.
+
+### Conclusion
 
 ## References
 1. National Records of Scotland (2022). Scottish Census. Scottish Census Web Portal. https://www.scotlandscensus.gov.uk/webapi/jsf/tableView/tableView.xhtml
