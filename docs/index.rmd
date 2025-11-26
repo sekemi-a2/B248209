@@ -135,7 +135,7 @@ pre_post_data <- key_months_data %>%
   mutate(HBname = factor(HBname, levels = HBname)) # Create factor to preserve order of rows in plot
 ```
 
-```{r message=FALSE, warning=FALSE}
+```{r message=FALSE, warning=FALSE, fig.width=8.5, fig.height=6}
 # Plot lollipop graph
 lollipop_graph <- pre_post_data %>% 
   ggplot() +
@@ -257,7 +257,7 @@ There are several limitations to this study. Regional differences in prescribing
 
 ### Next Steps
 
-Future studies could include multiple time points throughout the pandemic to capture fluctuations and provide a more detailed picture of prescribing trends. Additionally, to better understand variation across deprived areas, deprivation should be examined at a smaller georgraphic scale than Health Boards.
+Future studies could include multiple time points throughout the pandemic to capture fluctuations and provide a more detailed picture of prescribing trends. Additionally, to better understand variation across deprived areas, deprivation should be examined at a smaller geographic scale than Health Boards.
 
 ## References
 1. National Records of Scotland (2022). Scottish Census. Scottish Census Web Portal. https://www.scotlandscensus.gov.uk/webapi/jsf/tableView/tableView.xhtml
