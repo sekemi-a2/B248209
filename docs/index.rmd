@@ -250,17 +250,11 @@ ranked_table %>%
 ```
 ## Discussion
 
-#### Relationship between baseline prescription levels and post-COVID increase
+Analysis of Type 2 diabetes prescribing during the COVID-19 pandemic reveals clear temporal fluctuations closely aligned with national lockdowns. For instance, early 2021 saw a sharp decline in prescriptions corresponding to the third lockdown, likely reflecting reduced face-to-face appointments, interruptions to routine monitoring, and shifts in clinical priorities that limited opportunities for medication review and initiation (Figure 3.1). Once restrictions eased, most Health Boards experienced a rebound in prescribing, indicating a catch-up effect in routine diabetes care (Figures 3.1 and 3.2).
 
-Health Boards with higher pre-COVID levels (e.g. Greater Glasgow and Clyde, Lothian, Lanarkshire) generally show the largest absolute increases, but not always the largest percentage increases. Conversely, Western Isles Health Board with a lower baseline level showed high percentage increases despite a smaller absolute number, reflecting a more proportional rise relative to Health Board's starting point.
+The recovery, however, was uneven across regions. While Ayrshire and Arran consistently had the highest prescribing levels and Grampian and Shetland the lowest, post-COVID prescribing generally exceeded pre-pandemic levels across all Health Boards, suggesting a system-wide restoration of services without substantially worsening existing inequalities (Figure 3.2). Yet, the magnitude of proportional increases varied by deprivation status: more deprived or mixed-deprivation areas such as the Western Isles, Highland, and Lothian showed notably larger percentage increases, indicating these regions may have experienced more delayed or deferred care during the pandemic (Figure 3.3). In contrast, less deprived areas, particularly Shetland, had smaller proportional changes, implying relatively consistent access to services or faster recovery.
 
-#### Deprivation and prescription increases
-
-Most deprived areas (e.g. Ayrshire and Arran, Lanarkshire, Greater Glasgow and Clyde), these boards had both high absolute increases and substantial percentage increases, suggesting COVID-19 may have exacerbated existing health inequalities. Some less deprived boards (e.g. Lothian, Highland, Grampian) also show high percentage increases, indicating that the rise in prescriptions is not solely tied to deprivation.
-
-#### Overall Trends
-
-Across Scotland, every board saw increases in prescriptions, showing a consistent post-COVID rise in Type 2 diabetes medications. The pattern suggests that both highly deprived boards experienced large absolute rises, while smaller or less deprived boards saw proportionally larger percentage rises, showing a pattern that even though those from more deprived areas have higher prevalence of type 2 diabetes (Colhoun & McKnight 2020), people from poorer backgrounds were disproportionately disadvantaged in diabetes monitoring and screening (Hollad et al., 2023).
+Combining absolute and proportional changes highlights distinctive regional trajectories. The Western Isles, for example, recorded both the largest absolute and proportional increases, even though it is not the most deprived board, underscoring the influence of local factors beyond socioeconomic status (Figure 3.4). Across other boards, substantial variation persisted regardless of deprivation, suggesting that geography, population dispersion, workforce pressures, and local service organisation played critical roles in shaping recovery patterns. Together, these trends indicate that while socioeconomic deprivation remains an important determinant of prescribing levels, post-pandemic recovery was also shaped by broader structural and operational factors within each Health Board (Figures 3.3 and 3.4).
 
 ### Limitations 
 
@@ -270,7 +264,7 @@ There are several limitations to this study. Regional differences in prescribing
 
 Future studies could include multiple time points throughout the pandemic to capture fluctuations and provide a more detailed picture of prescribing trends. Additionally, to better understand variation across deprived areas, deprivation should be examined at a smaller geographic scale than Health Boards.
 
-### Conclusion
+## Conclusion
 
 ## References
 1. National Records of Scotland (2022). Scottish Census. Scottish Census Web Portal. https://www.scotlandscensus.gov.uk/webapi/jsf/tableView/tableView.xhtml
