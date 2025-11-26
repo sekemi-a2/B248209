@@ -280,12 +280,6 @@ https://www.data.gov.uk/dataset/27d0fe5f-79bb-4116-aec9-a8e565ff756a/nhs-health-
 The Effect of the COVID-19 Pandemic on HbA1c Testing: Prioritization of High-Risk Cases and Impact of Social Deprivation
 https://link.springer.com/article/10.1007/s13300-023-01380-x
 
-```{r}
-sessionInfo() # Shows exact packages used in r for reproducibility
-```
-
-
-
 
 
 
