@@ -21,7 +21,7 @@ This report examines how prescribing of common Type 2 medications changed during
 
 ## Methods
 
-Prescription data were obtained from Public Health Scotland’s Prescriptions in the Community dataset, specifically the “Data by Prescriber Location” records, covering the period from January 2020 to December 2021. Population estimates were drawn from the National Records of Scotland 2022 census release (Table UV302: General Health, Health Board Area, 2019). Socioeconomic deprivation was assessed using the Scottish Index of Multiple Deprivation (SIMD) 2020v2 data zone lookup file. NHS Scotland health board boundaries were incorporated using publicly available shapefiles to enable spatial analysis and visualisation in prescribing across regions.
+Prescription data were obtained from Public Health Scotland’s Prescriptions in the Community dataset, specifically the “Data by Prescriber Location” records, covering the period from January 2020 to December 2021, were downloaded and saved into a folder designated for consecutive data. Population estimates were downloaded from the National Records of Scotland 2022 census release (Table UV302: General Health, Health Board Area, 2019). Socioeconomic deprivation was assessed using the Scottish Index of Multiple Deprivation (SIMD) 2020v2 data zone lookup file. NHS Scotland health board boundaries were incorporated using publicly available shapefiles to enable spatial analysis and visualisation in prescribing across regions.
 
 The data was then filtered for type 2 diabetes medications including biguanides (metformin), SGLT2 inhibitors (gliflozins), sulphonylureas (gliclazide, glimepiride), DDP-4 inhibitors (gliptins), GLP-1 receptor agonists (glutides), thiazolidinediones (glitazone), with all available formulations. These filtered data were then processed to generate visual summaries and descriptive analyses.
 
@@ -38,17 +38,13 @@ library(plotly) # for interactive plot
 library(scales) # to add colour scheme
 
 # Get data from 24-month period from Jan 2020 - Dec 2021
-# Create function to read data in:
-prescriptions_data <- function() {
-  files <- c(paste0(c("jan", "feb","mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"), "2020"),
-             paste0(c("jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"), "2021"))
-  
-  map_dfr(files, ~read_csv(here("data", paste0(.x, ".csv"))) %>%
-                   clean_names() %>%
-                   mutate(file_name = .x))}
+files <- list.files(here("data", "consecutive_data"), pattern = "csv")
 
-# Read in data
-data_for_years <- prescriptions_data()
+consecutive_data <- files %>% 
+  map_dfr( ~read_csv(here("data", "consecutive_data", .))) %>% 
+  clean_names() # Cleans column names
+
+# Read in SIMD data
 deprivation_stats <- read_excel(here("data/SIMD.xlsx"))
 ```
 
@@ -71,7 +67,7 @@ First, to understand the overall pattern of prescribing during the COVID-19 pand
 ### Figure
 ```{r message=FALSE, warning=FALSE}
 # Filter for diabetes medications
-diabetes_summary <- data_for_years %>%
+diabetes_summary <- consecutive_data %>%
   filter(!is.na(bnf_item_description)) %>% 
   filter(str_detect(bnf_item_description,
                     regex("metformin|gliptin|gliflozin|glutide|glitazone|gliclazide|glimepiride", ignore_case = TRUE))) %>% # Search for common diabetes medications whilst ignoring upper and lower cases
@@ -262,9 +258,11 @@ There are several limitations to this study. Regional differences in prescribing
 
 ### Next Steps
 
-Future studies could include multiple time points throughout the pandemic to capture fluctuations and provide a more detailed picture of prescribing trends. Additionally, to better understand variation across deprived areas, deprivation should be examined at a smaller geographic scale than Health Boards.
+Future studies should examine multiple time points throughout the pandemic to capture fluctuations and provide a more detailed understanding of prescribing trends. Additionally, to better understand variation across deprived areas, deprivation should be assessed at a smaller geographic scale than Health Boards. Achieving this would require population data from the Scottish Census at finer geographic levels.
 
 ## Conclusion
+
+The COVID-19 pandemic caused notable disruptions to Type 2 diabetes prescribing in Scotland, with steep declines during lockdowns followed by a partial recovery once restrictions eased. Post-pandemic increases were observed across all Health Boards, yet the extent of recovery differed, with regions such as the Western Isles, Highland, and Lothian showing particularly pronounced rises. While longstanding socioeconomic disparities in medication use were still apparent, the recovery trajectory was also shaped by other factors. These findings suggest that, although deprivation influenced prescribing patterns, a range of other factors that need to be explored, contributed to the uneven and regionally varied impact of the pandemic on routine diabetes care.
 
 ## References
 1. National Records of Scotland (2022). Scottish Census. Scottish Census Web Portal. https://www.scotlandscensus.gov.uk/webapi/jsf/tableView/tableView.xhtml
