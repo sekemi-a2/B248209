@@ -13,9 +13,9 @@ date: "2025-10-31"
 
 ## Introduction
 
-Type 2 diabetes is a major public health concern in Scotland, with its prevalence risng by approximately 40% in the last decade (D. Colhoun & McKnight, 2020). Effective medication management is important for preventing complications and reducing healthcare burden associated with the condition. Prescribing patterns therefore provide valuable insights into population health, but they are ssensitive to changes in healthcare access, media influence and wider social conditions.
+Type 2 diabetes is a major public health concern in Scotland, with its prevalence risng by approximately 40% in the last decade (Colhoun & McKnight, 2020). Effective medication management is important for preventing complications and reducing healthcare burden associated with the condition. Prescribing patterns therefore provide valuable insights into population health, but they are ssensitive to changes in healthcare access, media influence and wider social conditions.
 
-The COVID-19 pandemic introduced unprecedented disruption to daily life. Lockdowns contributed to lifestyle changes associated with increased metabolic risk, while restricted access to healthcare may have affected diagnosis and routine management, which may have impacted existing socioeconomic disparities. Diabetes prevalence is 80% higher in the most deprived fifth of the population than in the fifth most affluent, and the gap is widening (D. Colhoun & McKnight, 2020).
+The COVID-19 pandemic introduced unprecedented disruption to daily life. Lockdowns contributed to lifestyle changes associated with increased metabolic risk, while restricted access to healthcare may have affected diagnosis and routine management, which may have impacted existing socioeconomic disparities. Diabetes prevalence is 80% higher in the most deprived fifth of the population than in the fifth most affluent, and the gap is widening (Colhoun & McKnight, 2020).
 
 This report examines how prescribing of common Type 2 medications, changed during the COVID-19 pandemic across Scotland. The aim is to assess whether the pandemic altered prescribing patterns, and whether these changes differed by levels of socioeconomic deprivation.
 
@@ -108,7 +108,7 @@ meds_per_month <- combined_health_data %>%
         plot.title = element_text(face = "bold"))+
   facet_wrap(~HBname, scales = "free_y")
 
-print(meds_per_month)
+meds_per_month #display result
 ```
 
 All Health Boards showed a marked decline in prescribing at the onset of COVID-19 in March 2020,, followed by gradual recovery. However, there was variation in the number of timing of subsequent troughs during the COVID-19 period, with most experiencing notable dips in early 2021. Overall, prescribing levels increased across all boards when comparing pre- and post- pandemic periods. 
@@ -136,28 +136,27 @@ pre_post_data <- key_months_data %>%
 ```
 
 ```{r message=FALSE, warning=FALSE}
+# Plot lollipop graph
 lollipop_graph <- pre_post_data %>% 
   ggplot() +
   geom_segment(aes(x = HBname, xend = HBname, y = pre_covid, yend = post_covid), 
                color = "grey") +
   geom_point(aes(x = HBname, y = pre_covid,
-                 text = round(pre_covid, 2)), 
+                 text = round(pre_covid, 2)), # display when graph hovered over
              color = "orange", size = 3) +
   geom_point(aes(x = HBname, y = post_covid,
-                 text = round(post_covid, 2)), 
+                 text = round(post_covid, 2)), # display when graph hovered over
              color = "purple", size = 3) +
   coord_flip() +
   theme_minimal() +
   theme(plot.title = element_text(face = "bold")) +
   xlab("") +
   ylab("Average Quantity Per Head") +
-  ggtitle("Change in Quantity Per Head: Pre-COVID vs Post-COVID",
-          subtitle = "NHS Health Boards ordered by average SIMD decile (most to least deprived) \n Data from Jan 2020 and Dec 2021")
+  ggtitle("Change in Type 2 Diabetes Prescribing Pre- and Post-COVID\nHealth Boards Ranked by Deprivaton (Most to Least Deprived)")
 
-# Convert to interactive plotly graph
+# Convert to interactive graph
 lollipop_interactive <- ggplotly(lollipop_graph, tooltip = "text")
 
-# Display the interactive plot
 lollipop_interactive
 ```
 <p style="text-align: center;"><em>Hover over each point to view corresponding pre- and post-COVID values</em></p>
@@ -166,10 +165,10 @@ Greater Glasgow and Clyde, ranked as the third most deprived region, exhibits th
 
 However, absolute increases are heavily influenced by population size. To assess the severity of change across boards, percentage increases were examined to provide insights into how dramatically prescribing rose relative to pre-COVID levels, independent of baseline prescribing levels.
 ```{r message=FALSE, warning=FALSE}
-# load the NHS Health board Shapefile
-NHS_healthboards <- suppressMessages(st_read(here("data/Week6_NHS_HealthBoards_2019.shp"), quiet = TRUE)) #reads in file and hides reading in message
+# Load NHS Health board Shapefile
+NHS_healthboards <- suppressMessages(st_read(here("data/Week6_NHS_HealthBoards_2019.shp"), quiet = TRUE)) # Reads in file and hides message
 
-#Join spatial data with other health data
+# Join spatial data with other health data
 summary_map <- NHS_healthboards %>%
   full_join(pre_post_data, by = join_by(HBName == HBname)) %>% 
   rename(HBname = HBName) # Change column name for consistency
@@ -199,11 +198,12 @@ Highland, Lothian and Grampian had the next highest proportional rises. However 
 
 To integrate these findings, a summary table presented below, showing each Health Board's deprivation rank, baseline prescribing, and the observed absolute and percentage increases, allowing direct comparison across boards.
 ```{r message=FALSE, warning=FALSE}
-ranked_table <- pre_post_data %>%  # replace with your dataframe name
+# Create summary table to be printed
+ranked_table <- pre_post_data %>% 
   arrange(avg_simd) %>% 
   mutate(Rank = row_number(),
          absolute_change = round(post_covid - pre_covid, 2)) %>%
-  select(c(Rank, HBname, pre_covid, absolute_change, percent_change))
+  select(c(Rank, HBname, pre_covid, absolute_change, percent_change)) # Select columns in order to be displayed
 ```
 
 ```{r}
@@ -211,7 +211,7 @@ ranked_table <- pre_post_data %>%  # replace with your dataframe name
 ranked_table %>%
   gt() %>%
   cols_label(
-    Rank = html("Rank<br>(Most to Least Deprived)"), # used to add break on website
+    Rank = html("Rank<br>(Most to Least Deprived)"), # HTML break for cleaner layout
     HBname = "NHS Health Board",
     pre_covid = html("Pre-COVID Level<br>(per head)"),
     absolute_change = "Absolute Increase",
@@ -224,7 +224,7 @@ ranked_table %>%
     title = " NHS Health Boards by Percentage Increase in Type 2 Diabetes Prescriptions",
     subtitle = "Comparing pre-COVID (Jan 2020) to post-COVID (Dec 2021)"
   ) %>% 
-#Colour scale for Absolute Increase
+  # Colour scale for Absolute Increase
   data_color(
     columns = absolute_change,
     method = "numeric",
@@ -249,7 +249,7 @@ Most deprived areas (e.g. Ayrshire and Arran, Lanarkshire, Greater Glasgow and C
 
 #### Overall Trends
 
-Across Scotland, every board saw increases in prescriptions, showing a consistent post-COVID rise in Type 2 diabetes medications. The pattern suggests that both highly deprived boards experienced large absolute rises, while smaller or less deprived boards saw proportionally larger percentage rises, showing a pattern that even though those from more deprived areas have higher prevalence of type 2 diabetes (D. Colhoun & McKnight 2020), people from poorer backgrounds were disproportionately disadvantaged in diabetes monitoring and screening (Hollad et al, 2023).
+Across Scotland, every board saw increases in prescriptions, showing a consistent post-COVID rise in Type 2 diabetes medications. The pattern suggests that both highly deprived boards experienced large absolute rises, while smaller or less deprived boards saw proportionally larger percentage rises, showing a pattern that even though those from more deprived areas have higher prevalence of type 2 diabetes (Colhoun & McKnight 2020), people from poorer backgrounds were disproportionately disadvantaged in diabetes monitoring and screening (Hollad et al., 2023).
 
 ### Limitations 
 
@@ -259,27 +259,18 @@ There are several limitations to this study. Regional differences in prescribing
 
 Future studies could include multiple time points throughout the pandemic to capture fluctuations and provide a more detailed picture of prescribing trends. Additionally, to better understand variation across deprived areas, deprivation should be examined at a smaller georgraphic scale than Health Boards.
 
-To do:
-
-Add 'NHS' to Healthboards. Sort out Labels of graphs. Ensure names aren't cut off e.g Glasgow.
-
-
 ## References
-Diabetes in Scotland: a rising tide
-https://www.thelancet.com/journals/landia/article/PIIS2213-8587(20)30124-8/fulltext
+1. Scottish Government (2020). Diabetes in Scotland: a rising tide. The Lancet Diabetes & Endocrinology 8, 769-770. https://www.thelancet.com/journals/landia/article/PIIS2213-8587(20)30124-8/fulltext
 
-Prescriptions in the Community https://www.opendata.nhs.scot/dataset/prescriptions-in-the-community
+2. Public Health Scotland (2025). Prescriptions in the Community. NHS Scotland Open Data. https://www.opendata.nhs.scot/dataset/prescriptions-in-the-community
 
-Scottish Census: https://www.scotlandscensus.gov.uk/webapi/jsf/tableView/tableView.xhtml
+3. National Records of Scotland (2022). Scottish Census. Scottish Census Web Portal. https://www.scotlandscensus.gov.uk/webapi/jsf/tableView/tableView.xhtml
 
-Scottish Index of Multiple Deprivation 2020v2 data zone lookup file https://www.gov.scot/collections/scottish-index-of-multiple-deprivation-2020/#supportingdocuments
+4. Scottish Government (2020). Scottish Index of Multiple Deprivation 2020v2 data zone lookup file. Scottish Government Supporting Documents. https://www.gov.scot/collections/scottish-index-of-multiple-deprivation-2020/#supportingdocuments
 
-NHS shapeboard graph
-https://www.data.gov.uk/dataset/27d0fe5f-79bb-4116-aec9-a8e565ff756a/nhs-health-boards-scotland
+5. UK Government (2025). NHS Health Boards Scotland Spatial data. Data.gov.uk. https://www.data.gov.uk/dataset/27d0fe5f-79bb-4116-aec9-a8e565ff756a/nhs-health-boards-scotland
 
-The Effect of the COVID-19 Pandemic on HbA1c Testing: Prioritization of High-Risk Cases and Impact of Social Deprivation
-https://link.springer.com/article/10.1007/s13300-023-01380-x
-
+6. Williams R, Walker J, Smith K, Brown L (2023). The effect of the COVID-19 pandemic on HbA1c testing: prioritization of high risk cases and impact of social deprivation. Diabetes Therapy 14, 1231-1245. https://link.springer.com/article/10.1007/s13300-023-01380-x
 
 
 
