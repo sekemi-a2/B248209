@@ -67,6 +67,8 @@ population_data <- read_csv(here("data/general_health_census.csv"), skip = 10) %
 The results are structured to show how Type 2 diabetes prescribing changed during and after the COVID-19 pandemic across Scotland. Temporal trends are presented first, followed by comparisons of absolute and percentage changes across Health Boards. A final summary table integrates these measures to illustrate variation across Scotland.
 
 First, to understand the overall pattern of prescribing during the COVID-19 pandemic, monthly prescribing rates from January 2020 to December 2022 were examined for each Health Board. Line plots were generated using free y-scales to account for substantial differences in prescription volume between Health Boards, ensuring that trends within boards were more easily comparable.
+
+### Figure
 ```{r message=FALSE, warning=FALSE}
 # Filter for diabetes medications
 diabetes_summary <- data_for_years %>%
@@ -114,6 +116,8 @@ meds_per_month #display result
 All Health Boards showed a marked decline in prescribing at the onset of COVID-19 in March 2020,, followed by gradual recovery. However, there was variation in the number of timing of subsequent troughs during the COVID-19 period, with most experiencing notable dips in early 2021. Overall, prescribing levels increased across all boards when comparing pre- and post- pandemic periods. 
 
 To quantify these changes January 2020 was selected as the pre-COVID baseline baseline and December 2022 as the post-pandemic comparison point. These timepoints reduce the influence of seasonal variation and allow for consistent comparison between more and less deprived areas. Absolute changes between pre-COVID and post-COVID prescribing were calculated and ordered by deprivation rank.
+
+### Figure
 ```{r message=FALSE, warning=FALSE}
 # Create table with pre and post COVID values
 key_months_data <- combined_health_data %>% 
@@ -122,7 +126,9 @@ key_months_data <- combined_health_data %>%
   mutate(covid_phase = case_when(
     paid_date_month == as.Date("2020-01-01") ~ "pre_covid",
     paid_date_month == as.Date("2021-12-01") ~ "post_covid"))
+```
 
+```{r message=FALSE, warning=FALSE}
 # Summarise by health board and COVID phase
 pre_post_data <- key_months_data %>%
   group_by(HBname, covid_phase) %>% 
@@ -150,9 +156,9 @@ lollipop_graph <- pre_post_data %>%
   coord_flip() +
   theme_minimal() +
   theme(plot.title = element_text(face = "bold")) +
-  xlab("") +
+  xlab("Health Boards (least to most deprived)") +
   ylab("Average Quantity Per Head") +
-  ggtitle("Change in Type 2 Diabetes Prescribing Pre- and Post-COVID\nHealth Boards Ranked by Deprivaton (Most to Least Deprived)")
+  ggtitle("Change in Type 2 Diabetes Prescribing Pre- and Post-COVID\nHealth Boards Ranked by Deprivaton")
 
 # Convert to interactive graph
 lollipop_interactive <- ggplotly(lollipop_graph, tooltip = "text")
@@ -164,6 +170,8 @@ lollipop_interactive
 Greater Glasgow and Clyde, ranked as the third most deprived region, exhibits the largest increase in Type 2 prescriptions per head. Lothian and Lanarkshire also show large increases, while boards such as Shetland and Orkney have smaller increases. Among the top five boards with the greatest increases, three of them, Ayrshire and Arran, Lanarkshire, and Greater Glasgow and Clyde are among the most deprived regions.
 
 However, absolute increases are heavily influenced by population size. To assess the severity of change across boards, percentage increases were examined to provide insights into how dramatically prescribing rose relative to pre-COVID levels, independent of baseline prescribing levels.
+
+### Figure
 ```{r message=FALSE, warning=FALSE}
 # Load NHS Health board Shapefile
 NHS_healthboards <- suppressMessages(st_read(here("data/Week6_NHS_HealthBoards_2019.shp"), quiet = TRUE)) # Reads in file and hides message
@@ -197,6 +205,8 @@ Unlike absolute increases, several less populated boards such as Western Isles e
 Highland, Lothian and Grampian had the next highest proportional rises. However other most deprived areas such as Ayrshire and Arran, Greater Glasgow and Clyde had one of the lower percentage increases.
 
 To integrate these findings, a summary table presented below, showing each Health Board's deprivation rank, baseline prescribing, and the observed absolute and percentage increases, allowing direct comparison across boards.
+
+### Figure
 ```{r message=FALSE, warning=FALSE}
 # Create summary table to be printed
 ranked_table <- pre_post_data %>% 
