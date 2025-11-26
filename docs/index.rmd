@@ -75,22 +75,22 @@ diabetes_summary <- data_for_years %>%
                     regex("metformin|gliptin|gliflozin|glutide|glitazone|gliclazide|glimepiride", ignore_case = TRUE))) %>% # Search for common diabetes medications whilst ignoring upper and lower cases
     group_by(paid_date_month, hbt) %>% 
     summarise(paid_quantity = sum(paid_quantity, na.rm = TRUE)) %>% 
-    mutate(paid_date_month = ym(paid_date_month)) # Change months from numbers to letters
+    mutate(paid_date_month = ym(paid_date_month)) # Format dates
 
 # Merge all tables together
 combined_health_data <- deprivation_stats %>%
   full_join(diabetes_summary, join_by(HBcode == hbt)) %>%
   left_join(population_data, join_by(HBname == hb_name))
 
-# To calculate prescriptions per person
+# Calculate prescriptions per person
 combined_health_data <- combined_health_data %>%
   group_by(HBname, paid_date_month) %>%
-  mutate(quantity_per_head = sum(paid_quantity, na.rm = TRUE) / mean(as.numeric(hb_population))) # Calculate prescriptions per person and change hb_population to numeric value instead of character
+  mutate(quantity_per_head = paid_quantity / mean(as.numeric(hb_population))) # Calculate prescriptions per person and change hb_population to numeric value instead of character
 ```
 
-```{r message=FALSE, warning=FALSE}
-# Creating a summary table and filtering for common type 2 medications
-totalmeds_plot <- combined_health_data %>% 
+```{r message=FALSE, warning=FALSE, fig.width=10, fig.height=6}
+# Plot diabetes summary table, highlighting COVID-19 period
+meds_per_month <- combined_health_data %>% 
   ggplot(aes(x = paid_date_month, y = quantity_per_head)) +
   # Add vertical lines for COVID start and end
   geom_vline(xintercept = as.numeric(ymd("2020-03-01")), 
@@ -99,21 +99,23 @@ totalmeds_plot <- combined_health_data %>%
              linetype = "dashed", colour = "orange") +
   geom_line(colour = "purple") +
   labs(
-    title = "Type 2 diabetes medications per person across NHS Healthboards",
+    title = "Type 2 diabetes medications per person across Scotland NHS Healthboards",
     subtitle = "January 2020 - December 2021 | Orange dashed lines: COVID-19 period (Mar 2020 - Jun 2021)",
     x = "Month",
     y = "Quantity per head") +
   theme_light() +
-  theme(axis.text.x = element_text(angle = 45, hjust=1), legend.position = "bottom", plot.title = element_text(face = "bold")) +
+  theme(axis.text.x = element_text(angle = 45, hjust=1), 
+        plot.title = element_text(face = "bold"))+
   facet_wrap(~HBname, scales = "free_y")
 
-print(totalmeds_plot)
+print(meds_per_month)
 ```
 
 All Health Boards showed a marked decline in prescribing at the onset of COVID-19 in March 2020,, followed by gradual recovery. However, there was variation in the number of timing of subsequent troughs during the COVID-19 period, with most experiencing notable dips in early 2021. Overall, prescribing levels increased across all boards when comparing pre- and post- pandemic periods. 
 
 To quantify these changes January 2020 was selected as the pre-COVID baseline baseline and December 2022 as the post-pandemic comparison point. These timepoints reduce the influence of seasonal variation and allow for consistent comparison between more and less deprived areas. Absolute changes between pre-COVID and post-COVID prescribing were calculated and ordered by deprivation rank.
 ```{r message=FALSE, warning=FALSE}
+# Create table with pre and post COVID values
 key_months_data <- combined_health_data %>% 
   filter(paid_date_month %in% as.Date(c("2020-01-01", "2021-12-01"))) %>% 
   group_by(HBname) %>% 
@@ -122,28 +124,27 @@ key_months_data <- combined_health_data %>%
     paid_date_month == as.Date("2021-12-01") ~ "post_covid"))
 
 # Summarise by health board and COVID phase
-lollipop_data <- key_months_data %>%
+pre_post_data <- key_months_data %>%
   group_by(HBname, covid_phase) %>% 
   summarise(avg_qph = mean(quantity_per_head, na.rm = TRUE),
             avg_simd = mean(SIMD2020v2_Decile, na.rm = TRUE)) %>%
-  # Pivot to get Pre and Post columns for connecting lines
-  pivot_wider(names_from = covid_phase, values_from = avg_qph) %>%
-  mutate(percent_change = round(((post_covid - pre_covid)/pre_covid)*100, 2)) %>% # To calculate percent change and round to 2 d.p
-  # Arrange by descending avg_simd
-  arrange(desc(avg_simd)) %>%
-  ungroup() %>% #before creating a factor so hat HBname can be arranged in order of avg_simd in graph
-  # Create factor to preserve ordering in plot
-  mutate(HBname = factor(HBname, levels = HBname))
+  pivot_wider(names_from = covid_phase, values_from = avg_qph) %>% # Pivot to get Pre and Post columns for connecting lines
+  mutate(percent_change = round(((post_covid - pre_covid)/pre_covid)*100, 2)) %>%
+  arrange(desc(avg_simd)) %>% # Rank from least to most deprived
+  ungroup() %>% # Before creating a factor so HBname can be arranged in order of avg_simd in graph
+  mutate(HBname = factor(HBname, levels = HBname)) # Create factor to preserve order of rows in plot
+```
 
-lollipop_graph <- lollipop_data %>% 
+```{r message=FALSE, warning=FALSE}
+lollipop_graph <- pre_post_data %>% 
   ggplot() +
   geom_segment(aes(x = HBname, xend = HBname, y = pre_covid, yend = post_covid), 
                color = "grey") +
   geom_point(aes(x = HBname, y = pre_covid,
-                 text = round(pre_covid)), 
+                 text = round(pre_covid, 2)), 
              color = "orange", size = 3) +
   geom_point(aes(x = HBname, y = post_covid,
-                 text = round(post_covid)), 
+                 text = round(post_covid, 2)), 
              color = "purple", size = 3) +
   coord_flip() +
   theme_minimal() +
@@ -159,6 +160,8 @@ lollipop_interactive <- ggplotly(lollipop_graph, tooltip = "text")
 # Display the interactive plot
 lollipop_interactive
 ```
+<p style="text-align: center;"><em>Hover over each point to view corresponding pre- and post-COVID values</em></p>
+
 Greater Glasgow and Clyde, ranked as the third most deprived region, exhibits the largest increase in Type 2 prescriptions per head. Lothian and Lanarkshire also show large increases, while boards such as Shetland and Orkney have smaller increases. Among the top five boards with the greatest increases, three of them, Ayrshire and Arran, Lanarkshire, and Greater Glasgow and Clyde are among the most deprived regions.
 
 However, absolute increases are heavily influenced by population size. To assess the severity of change across boards, percentage increases were examined to provide insights into how dramatically prescribing rose relative to pre-COVID levels, independent of baseline prescribing levels.
@@ -168,7 +171,7 @@ NHS_healthboards <- suppressMessages(st_read(here("data/Week6_NHS_HealthBoards_2
 
 #Join spatial data with other health data
 summary_map <- NHS_healthboards %>%
-  full_join(lollipop_data, by = join_by(HBName == HBname)) %>% 
+  full_join(pre_post_data, by = join_by(HBName == HBname)) %>% 
   rename(HBname = HBName) # Change column name for consistency
 ```
 
@@ -178,10 +181,9 @@ plot_map <- summary_map %>%
   ggplot() +
   geom_sf(aes(fill = percent_change, text = paste0("Health Board: ", HBname, "\n", round(percent_change,2), "%")), size = 0.3) +
   scale_fill_viridis_c(option = "plasma", 
-                       name = "% Change in Average Quantity per Head") +
+                       name = "% Change") +
   labs(
-    title = "Percentage Change in Average Type 2 Diabetes Prescriptions Per Head \nPre-COVID → Post-COVID",
-    caption = "Data from Jan 2020 and Dec 2021"
+    title = "Percentage Change in Average Type 2 Diabetes Prescriptions Per Head\n Pre-COVID → Post-COVID by NHS Health Boards"
   ) +
   theme_minimal() +
   theme(legend.position = "right", plot.title = element_text(face = "bold"))
@@ -189,34 +191,37 @@ plot_map <- summary_map %>%
 interactive_map <- ggplotly(plot_map, tooltip = "text")
 
 interactive_map
-#Add click to see name of healthboard and exact percentage number
 ```
+<p style="text-align: center;"><em>Hover over map to view Health Board name and corresponding percentage change</em></p>
+
 Unlike absolute increases, several less populated boards such as Western Isles experienced highest proportional growth, which was also ranked fourth highest deprivation boards. 
 Highland, Lothian and Grampian had the next highest proportional rises. However other most deprived areas such as Ayrshire and Arran, Greater Glasgow and Clyde had one of the lower percentage increases.
 
 To integrate these findings, a summary table presented below, showing each Health Board's deprivation rank, baseline prescribing, and the observed absolute and percentage increases, allowing direct comparison across boards.
 ```{r message=FALSE, warning=FALSE}
-ranked_table <- lollipop_data %>%  # replace with your dataframe name
+ranked_table <- pre_post_data %>%  # replace with your dataframe name
   arrange(avg_simd) %>% 
   mutate(Rank = row_number(),
          absolute_change = round(post_covid - pre_covid, 2)) %>%
   select(c(Rank, HBname, pre_covid, absolute_change, percent_change))
+```
 
-# ---- Step 2: GT table ----
+```{r}
+# Create gt table
 ranked_table %>%
   gt() %>%
   cols_label(
     Rank = html("Rank<br>(Most to Least Deprived)"), # used to add break on website
-    HBname = "Health Board",
+    HBname = "NHS Health Board",
     pre_covid = html("Pre-COVID Level<br>(per head)"),
     absolute_change = "Absolute Increase",
     percent_change = "Percentage Increase (%)"
   ) %>%
   fmt_number(
     columns = c(pre_covid),
-    decimals = 0) %>%
+    decimals = 2) %>%
   tab_header(
-    title = " Health Boards by Percentage Increase in Type 2 Diabetes Prescriptions",
+    title = " NHS Health Boards by Percentage Increase in Type 2 Diabetes Prescriptions",
     subtitle = "Comparing pre-COVID (Jan 2020) to post-COVID (Dec 2021)"
   ) %>% 
 #Colour scale for Absolute Increase
