@@ -254,7 +254,7 @@ Combining absolute and proportional changes highlights distinctive regional traj
 
 ### Limitations 
 
-There are several limitations to this study. Regional differences in prescribing patterns may be influenced by confounders such as local health policies, medication availability, or access to healthcare settings. Additionally, only two time points are compared, so fluctuations during the pandemic are not captured. Finally, average SIMD scores showed little variation, requiring deprivation to be ranked rather than categorized into low- to high-deprived groups.
+There are several limitations to this study. Regional differences in prescribing patterns may be influenced by confounders such as local health policies, medication availability, or access to healthcare settings. Additionally, only two time points are compared, so fluctuations during the pandemic are not captured. Finally, average SIMD scores showed little variation, requiring deprivation to be ranked rather than categorised into low- to high-deprived groups.
 
 ### Next Steps
 
