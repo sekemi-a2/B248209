@@ -244,6 +244,8 @@ ranked_table %>%
     palette = "Purples"
   )
 ```
+Figure 3.4 highlighted clear increases in both absolute and percentage change across all Health Boards. The Western Isles, the fourth most deprived Health Board, recorded the highest rise in both absolute and proportional terms, whereas Shetland, the second least deprived Health Board, showed the smallest increases. Although all Health Boards experienced growth, the ranking of areas by absolute versus percentage change did not fully align with deprivation order, indicating variation in prescribing increases that was not solely explained by socioeconomic status.
+
 ## Discussion
 
 Analysis of Type 2 diabetes prescribing during the COVID-19 pandemic reveals temporal fluctuations aligned with national lockdowns. For instance, early 2021 saw a sharp decline in prescriptions corresponding to the third lockdown, likely reflecting reduced face-to-face appointments, interruptions to routine monitoring, and shifts in clinical priorities that limited opportunities for medication review and initiation (Figure 3.1). Once restrictions eased, most Health Boards experienced a rebound in prescribing, indicating a catch-up effect in routine diabetes care (Figures 3.1 and 3.2).
