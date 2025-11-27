@@ -265,17 +265,18 @@ Future studies should examine multiple time points throughout the pandemic to ca
 The COVID-19 pandemic caused notable disruptions to Type 2 diabetes prescribing in Scotland, with steep declines during lockdowns followed by a partial recovery once restrictions eased. Post-pandemic increases were observed across all Health Boards, yet the extent of recovery differed, with regions such as the Western Isles, Highland, and Lothian showing particularly pronounced rises. While longstanding socioeconomic disparities in medication use were still apparent, the recovery trajectory was also shaped by other factors. These findings suggest that, although deprivation influenced prescribing patterns, a range of other factors that need to be explored, contributed to the uneven and regionally varied impact of the pandemic on routine diabetes care.
 
 ## References
-1. National Records of Scotland (2022). Scottish Census. Scottish Census Web Portal. https://www.scotlandscensus.gov.uk/webapi/jsf/tableView/tableView.xhtml
 
-2. Public Health Scotland (2025). Prescriptions in the Community. NHS Scotland Open Data. https://www.opendata.nhs.scot/dataset/prescriptions-in-the-community
+Colhoun, H.M. & McKnight, J. (2020). Diabetes in Scotland: a rising tide. The Lancet Diabetes & Endocrinology 8, 769-770. https://doi.org/10.1016/S2213-8587(20)30124-8
 
-3. Colhoun, H.M. & McKnight, J. (2020). Diabetes in Scotland: a rising tide. The Lancet Diabetes & Endocrinology 8, 769-770. https://doi.org/10.1016/S2213-8587(20)30124-8
+National Records of Scotland (2022). Scottish Census. Scottish Census Web Portal. https://www.scotlandscensus.gov.uk/webapi/jsf/tableView/tableView.xhtml
 
-4. Scottish Government (2020). Scottish Index of Multiple Deprivation 2020v2 data zone lookup file. Scottish Government Supporting Documents. https://www.gov.scot/collections/scottish-index-of-multiple-deprivation-2020/#supportingdocuments
+Public Health Scotland (2025). Prescriptions in the Community. NHS Scotland Open Data. https://www.opendata.nhs.scot/dataset/prescriptions-in-the-community
 
-5. UK Government (2025). NHS Health Boards Scotland. Data.gov.uk. https://www.data.gov.uk/dataset/27d0fe5f-79bb-4116-aec9-a8e565ff756a/nhs-health-boards-scotland
+Scottish Government (2020). Scottish Index of Multiple Deprivation 2020v2 data zone lookup file. Scottish Government Supporting Documents. https://www.gov.scot/collections/scottish-index-of-multiple-deprivation-2020/#supportingdocuments
 
-6. Williams R, Walker J, Smith K, Brown L (2023). The effect of the COVID-19 pandemic on HbA1c testing: prioritization of high risk cases and impact of social deprivation. Diabetes Therapy 14, 1231-1245. https://doi.org/10.1007/s13300-023-01380-x
+UK Government (2025). NHS Health Boards Scotland. Data.gov.uk. https://www.data.gov.uk/dataset/27d0fe5f-79bb-4116-aec9-a8e565ff756a/nhs-health-boards-scotland
+
+Williams R, Walker J, Smith K, Brown L (2023). The effect of the COVID-19 pandemic on HbA1c testing: prioritization of high risk cases and impact of social deprivation. Diabetes Therapy 14, 1231-1245. https://doi.org/10.1007/s13300-023-01380-x
 
 
 ```{r}
