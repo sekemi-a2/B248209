@@ -269,7 +269,7 @@ The COVID-19 pandemic caused notable disruptions to Type 2 diabetes prescribing 
 
 2. Public Health Scotland (2025). Prescriptions in the Community. NHS Scotland Open Data. https://www.opendata.nhs.scot/dataset/prescriptions-in-the-community
 
-3. Scottish Government (2020). Diabetes in Scotland: a rising tide. The Lancet Diabetes & Endocrinology 8, 769-770. https://doi.org/10.1016/S2213-8587(20)30124-8
+3. Colhoun, H.M. & McKnight, J. (2020). Diabetes in Scotland: a rising tide. The Lancet Diabetes & Endocrinology 8, 769-770. https://doi.org/10.1016/S2213-8587(20)30124-8
 
 4. Scottish Government (2020). Scottish Index of Multiple Deprivation 2020v2 data zone lookup file. Scottish Government Supporting Documents. https://www.gov.scot/collections/scottish-index-of-multiple-deprivation-2020/#supportingdocuments
 
